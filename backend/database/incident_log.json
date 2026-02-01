@@ -1,0 +1,94 @@
+[
+  {
+    "id": "INC-1769952726",
+    "timestamp": "2026-02-01T19:02:06.720006",
+    "offender": {
+      "id": "CIV-005",
+      "name": "Alex Chen",
+      "photo_url": "https://randomuser.me/api/portraits/men/5.jpg",
+      "prior_offenses": 1,
+      "match_confidence": 0.95
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1769952748",
+    "timestamp": "2026-02-01T19:02:28.512745",
+    "offender": null,
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1769952772",
+    "timestamp": "2026-02-01T19:02:52.229951",
+    "offender": null,
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1769953735",
+    "timestamp": "2026-02-01T19:18:55.530661",
+    "offender": {
+      "id": "CIV-002",
+      "name": "Jane Smith",
+      "photo_url": "https://randomuser.me/api/portraits/women/2.jpg",
+      "prior_offenses": 1,
+      "match_confidence": 0.91
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1769953766",
+    "timestamp": "2026-02-01T19:19:26.553806",
+    "offender": {
+      "id": "CIV-004",
+      "name": "Sarah Wilson",
+      "photo_url": "https://randomuser.me/api/portraits/women/4.jpg",
+      "prior_offenses": 0,
+      "match_confidence": 0.86
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1769953892",
+    "timestamp": "2026-02-01T19:21:32.302104",
+    "offender": {
+      "id": "CIV-002",
+      "name": "Jane Smith",
+      "photo_url": "https://randomuser.me/api/portraits/women/2.jpg",
+      "prior_offenses": 1,
+      "match_confidence": 0.91
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1769954043",
+    "timestamp": "2026-02-01T19:24:03.331125",
+    "offender": {
+      "id": "CIV-005",
+      "name": "Alex Chen",
+      "photo_url": "https://randomuser.me/api/portraits/men/5.jpg",
+      "prior_offenses": 1,
+      "match_confidence": 0.88
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1769954358",
+    "timestamp": "2026-02-01T19:29:18.881109",
+    "offender": {
+      "id": "CIV-005",
+      "name": "Alex Chen",
+      "photo_url": "https://randomuser.me/api/portraits/men/5.jpg",
+      "prior_offenses": 1,
+      "match_confidence": 0.85
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  }
+]
