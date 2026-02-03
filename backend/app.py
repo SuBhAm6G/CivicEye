@@ -159,8 +159,27 @@ def generate_frames():
                 
                 # Update state based on detection
                 if detected_state == "WARNING" and SYSTEM_STATE == "IDLE":
-                    # Generate mock offender data
-                    offender = face_matcher.match_face()
+                    # Save the captured violator frame
+                    from datetime import datetime
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    captured_filename = f"violator_{timestamp}.jpg"
+                    captured_path = os.path.join(DATABASE_DIR, 'captured', captured_filename)
+                    
+                    # Create captured directory if it doesn't exist
+                    os.makedirs(os.path.join(DATABASE_DIR, 'captured'), exist_ok=True)
+                    
+                    # Save the frame
+                    if litter_monitor.save_captured_frame(captured_path):
+                        # Create offender data with real captured image
+                        offender = {
+                            "id": f"VIO-{timestamp}",
+                            "name": "Unidentified Violator",
+                            "photo_url": f"http://localhost:5000/database/captured/{captured_filename}"
+                        }
+                    else:
+                        # Fallback to mock data if capture failed
+                        offender = face_matcher.match_face()
+                    
                     set_state("WARNING", offender)
                 
                 frame = annotated_frame if annotated_frame is not None else frame
@@ -326,6 +345,13 @@ def serve_assets(filename):
     """Serve static assets."""
     assets_dir = os.path.join(os.path.dirname(BASE_DIR), 'assets')
     return send_from_directory(assets_dir, filename)
+
+
+@app.route('/database/captured/<path:filename>')
+def serve_captured_images(filename):
+    """Serve captured violator images."""
+    captured_dir = os.path.join(DATABASE_DIR, 'captured')
+    return send_from_directory(captured_dir, filename)
 
 
 @app.route('/display/toggle', methods=['POST'])

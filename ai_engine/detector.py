@@ -6,7 +6,7 @@ Using YOLOv8 for person/object detection with velocity-based static object detec
 import cv2
 import numpy as np
 from ultralytics import YOLO
-from collections import defaultdict
+from collections import defaultdict, deque
 import time
 
 
@@ -54,6 +54,12 @@ class LitterMonitor:
         self.current_state = "IDLE"
         self.detected_bottle_frame = None
         self.offender_bbox = None
+        self.captured_violator_frame = None  # Store the actual frame when violation detected
+        
+        # Frame buffer for capturing past moments (stores last 10 seconds at ~30 fps)
+        # Each entry: (timestamp, frame_copy)
+        self.frame_buffer = deque(maxlen=300)  # 10 seconds * 30 fps = 300 frames
+        self.capture_delay = 7.0  # Capture from 7 seconds ago
         
         # Simple tracking with counter
         self.next_bottle_id = 0
@@ -75,6 +81,25 @@ class LitterMonitor:
     def _calculate_distance(self, point1, point2):
         """Calculating Euclidean distance between two points."""
         return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
+    
+    def _get_past_frame(self, seconds_ago):
+        """Get frame from N seconds ago from the buffer."""
+        if len(self.frame_buffer) == 0:
+            return None
+        
+        target_time = time.time() - seconds_ago
+        
+        # Find the frame closest to target_time
+        closest_frame = None
+        min_time_diff = float('inf')
+        
+        for timestamp, frame in self.frame_buffer:
+            time_diff = abs(timestamp - target_time)
+            if time_diff < min_time_diff:
+                min_time_diff = time_diff
+                closest_frame = frame
+        
+        return closest_frame if closest_frame is not None else self.frame_buffer[-1][1]
     
     def _match_bottle_to_track(self, centroid, threshold=50):
         """Simple tracking: match detection to existing track or create new."""
@@ -139,6 +164,10 @@ class LitterMonitor:
         """
         if frame is None:
             return None, self.current_state
+        
+        # Add current frame to buffer with timestamp
+        current_time = time.time()
+        self.frame_buffer.append((current_time, frame.copy()))
         
         # Run YOLOv8 detection
         results = self.model(frame, verbose=False)
@@ -223,6 +252,8 @@ class LitterMonitor:
                 elif time.time() - self.grace_start_time >= self.GRACE_PERIOD:
                     self.current_state = "WARNING"
                     self.grace_start_time = None
+                    # Capture frame from 7 seconds ago (before grace period started)
+                    self.captured_violator_frame = self._get_past_frame(self.capture_delay)
             else:
                 self.grace_start_time = None
                 
@@ -284,3 +315,17 @@ class LitterMonitor:
         self.grace_start_time = None
         self.current_state = "IDLE"
         self.next_bottle_id = 0
+        self.captured_violator_frame = None
+        self.frame_buffer.clear()  # Clear frame buffer
+    
+    def get_captured_frame(self):
+        """Get the captured violator frame."""
+        return self.captured_violator_frame
+    
+    def save_captured_frame(self, save_path):
+        """Save the captured frame to disk."""
+        if self.captured_violator_frame is not None:
+            import cv2
+            cv2.imwrite(save_path, self.captured_violator_frame)
+            return True
+        return False

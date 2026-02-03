@@ -324,5 +324,27 @@
     },
     "status": "CONFIRMED",
     "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1770134668",
+    "timestamp": "2026-02-03T21:34:28.710621",
+    "offender": {
+      "id": "VIO-20260203_213423",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260203_213423.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1770134925",
+    "timestamp": "2026-02-03T21:38:45.767565",
+    "offender": {
+      "id": "VIO-20260203_213841",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260203_213841.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
   }
 ]
