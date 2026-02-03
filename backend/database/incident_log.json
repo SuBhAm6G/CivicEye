@@ -246,5 +246,18 @@
     },
     "status": "CONFIRMED",
     "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1770098525",
+    "timestamp": "2026-02-03T11:32:05.965792",
+    "offender": {
+      "id": "CIV-002",
+      "name": "Jane Smith",
+      "photo_url": "https://randomuser.me/api/portraits/women/2.jpg",
+      "prior_offenses": 1,
+      "match_confidence": 0.87
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
   }
 ]

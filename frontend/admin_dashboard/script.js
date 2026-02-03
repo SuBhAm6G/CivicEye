@@ -411,7 +411,8 @@ async function saveMessages() {
 async function toggleSurveillance() {
     const btn = elements.pauseSurveillanceBtn;
     const isPaused = btn.classList.contains('paused');
-    const newState = !isPaused; // true = active, false = paused
+    const willPause = !isPaused;
+    const newState = !willPause; // true = active, false = paused
 
     try {
         const response = await fetch(`${CONFIG.API_BASE}/surveillance/toggle`, {
@@ -423,7 +424,7 @@ async function toggleSurveillance() {
         console.log('Surveillance toggle response:', data);
 
         if (data.success) {
-            if (newState) {
+            if (data.surveillance_active) {
                 // Resuming
                 btn.classList.remove('paused');
                 btn.querySelector('.btn-icon').textContent = '⏸️';
