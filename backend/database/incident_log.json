@@ -259,5 +259,70 @@
     },
     "status": "CONFIRMED",
     "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1770132005",
+    "timestamp": "2026-02-03T20:50:05.825835",
+    "offender": {
+      "id": "CIV-004",
+      "name": "Sarah Wilson",
+      "photo_url": "https://randomuser.me/api/portraits/women/4.jpg",
+      "prior_offenses": 0,
+      "match_confidence": 0.86
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1770132320",
+    "timestamp": "2026-02-03T20:55:20.851698",
+    "offender": {
+      "id": "CIV-003",
+      "name": "Mike Johnson",
+      "photo_url": "https://randomuser.me/api/portraits/men/3.jpg",
+      "prior_offenses": 3,
+      "match_confidence": 0.9
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1770132372",
+    "timestamp": "2026-02-03T20:56:12.122550",
+    "offender": {
+      "id": "CIV-005",
+      "name": "Alex Chen",
+      "photo_url": "https://randomuser.me/api/portraits/men/5.jpg",
+      "prior_offenses": 1,
+      "match_confidence": 0.89
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1770132626",
+    "timestamp": "2026-02-03T21:00:26.182010",
+    "offender": {
+      "id": "CIV-003",
+      "name": "Mike Johnson",
+      "photo_url": "https://randomuser.me/api/portraits/men/3.jpg",
+      "prior_offenses": 3,
+      "match_confidence": 0.95
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1770134113",
+    "timestamp": "2026-02-03T21:25:13.204695",
+    "offender": {
+      "id": "CIV-005",
+      "name": "Alex Chen",
+      "photo_url": "https://randomuser.me/api/portraits/men/5.jpg",
+      "prior_offenses": 1,
+      "match_confidence": 0.95
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
   }
 ]

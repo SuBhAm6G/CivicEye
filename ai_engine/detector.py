@@ -1,6 +1,6 @@
 """
 CivicEye AI Engine - Litter Detection Module
-Uses YOLOv8 for person/object detection with velocity-based static object detection.
+Using YOLOv8 for person/object detection with velocity-based static object detection.
 """
 
 import cv2
@@ -17,7 +17,7 @@ class LitterMonitor:
     """
     
     def __init__(self, model_path='yolov8n.pt'):
-        """Initialize the LitterMonitor with YOLOv8 model."""
+        """Initializing the LitterMonitor with YOLOv8 model."""
         self.model = YOLO(model_path)
         
         # Detection parameters
@@ -39,7 +39,7 @@ class LitterMonitor:
             67: 'cell phone',
             73: 'book',
             76: 'scissors',
-            77: 'teddy bear',
+            77: 'teddy bear', 
         }
         
         self.VELOCITY_THRESHOLD = 8  # pixels (slightly relaxed)
@@ -68,12 +68,12 @@ class LitterMonitor:
         }
     
     def _calculate_centroid(self, bbox):
-        """Calculate centroid from bounding box [x1, y1, x2, y2]."""
+        """Calculating centroid from bounding box [x1, y1, x2, y2]."""
         x1, y1, x2, y2 = bbox
         return ((x1 + x2) / 2, (y1 + y2) / 2)
     
     def _calculate_distance(self, point1, point2):
-        """Calculate Euclidean distance between two points."""
+        """Calculating Euclidean distance between two points."""
         return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
     
     def _match_bottle_to_track(self, centroid, threshold=50):
