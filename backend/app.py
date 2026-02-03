@@ -32,6 +32,17 @@ CURRENT_OFFENDER = None
 FRAME_LOCK = threading.Lock()
 CURRENT_FRAME = None
 
+# Public Display Control
+DISPLAY_ENABLED = True
+CUSTOM_MESSAGES = {
+    "warning": "PLEASE PICK UP YOUR TRASH",
+    "shaming": "LITTERING IS A CIVIC OFFENSE",
+    "fine": "FINE: ₹500 | PRIOR OFFENSES LOGGED"
+}
+
+# Surveillance Control
+SURVEILLANCE_ACTIVE = True
+
 # Initialize AI components
 litter_monitor = None
 face_matcher = FaceMatcher()
@@ -137,20 +148,37 @@ def generate_frames():
             if not ret:
                 continue
         
-        # Check for state timeout
-        check_state_timeout()
-        
-        # Process frame with AI detector
-        if litter_monitor:
-            annotated_frame, detected_state = litter_monitor.detect_frame(frame)
+        # Check if surveillance is active
+        if SURVEILLANCE_ACTIVE:
+            # Check for state timeout
+            check_state_timeout()
             
-            # Update state based on detection
-            if detected_state == "WARNING" and SYSTEM_STATE == "IDLE":
-                # Generate mock offender data
-                offender = face_matcher.match_face()
-                set_state("WARNING", offender)
+            # Process frame with AI detector
+            if litter_monitor:
+                annotated_frame, detected_state = litter_monitor.detect_frame(frame)
+                
+                # Update state based on detection
+                if detected_state == "WARNING" and SYSTEM_STATE == "IDLE":
+                    # Generate mock offender data
+                    offender = face_matcher.match_face()
+                    set_state("WARNING", offender)
+                
+                frame = annotated_frame if annotated_frame is not None else frame
+        else:
+            # Surveillance paused - show overlay
+            import cv2
+            import numpy as np
+            overlay = frame.copy()
+            cv2.rectangle(overlay, (0, 0), (frame.shape[1], frame.shape[0]), (0, 0, 0), -1)
+            frame = cv2.addWeighted(overlay, 0.5, frame, 0.5, 0)
             
-            frame = annotated_frame if annotated_frame is not None else frame
+            # Add "PAUSED" text
+            text = "SURVEILLANCE PAUSED"
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            text_size = cv2.getTextSize(text, font, 2, 3)[0]
+            text_x = (frame.shape[1] - text_size[0]) // 2
+            text_y = (frame.shape[0] + text_size[1]) // 2
+            cv2.putText(frame, text, (text_x, text_y), font, 2, (0, 165, 255), 3)
         
         with FRAME_LOCK:
             CURRENT_FRAME = frame.copy()
@@ -225,7 +253,10 @@ def get_status():
         "timestamp": STATE_TIMESTAMP,
         "offender_details": CURRENT_OFFENDER,
         "timeout_remaining": max(0, STATE_TIMEOUT - (time.time() - STATE_TIMESTAMP)) 
-                            if SYSTEM_STATE in ["WARNING", "PENDING_REVIEW"] else None
+                            if SYSTEM_STATE in ["WARNING", "PENDING_REVIEW"] else None,
+        "display_enabled": DISPLAY_ENABLED,
+        "custom_messages": CUSTOM_MESSAGES,
+        "surveillance_active": SURVEILLANCE_ACTIVE
     })
 
 
@@ -295,6 +326,54 @@ def serve_assets(filename):
     """Serve static assets."""
     assets_dir = os.path.join(os.path.dirname(BASE_DIR), 'assets')
     return send_from_directory(assets_dir, filename)
+
+
+@app.route('/display/toggle', methods=['POST'])
+def toggle_display():
+    """Toggle public display on/off."""
+    global DISPLAY_ENABLED
+    data = request.get_json()
+    DISPLAY_ENABLED = data.get('enabled', True)
+    return jsonify({
+        "success": True,
+        "display_enabled": DISPLAY_ENABLED
+    })
+
+
+@app.route('/display/messages', methods=['POST'])
+def update_messages():
+    """Update custom display messages."""
+    global CUSTOM_MESSAGES
+    data = request.get_json()
+    
+    if 'warning' in data:
+        CUSTOM_MESSAGES['warning'] = data['warning']
+    if 'shaming' in data:
+        CUSTOM_MESSAGES['shaming'] = data['shaming']
+    if 'fine' in data:
+        CUSTOM_MESSAGES['fine'] = data['fine']
+    
+    return jsonify({
+        "success": True,
+        "custom_messages": CUSTOM_MESSAGES
+    })
+
+
+@app.route('/surveillance/toggle', methods=['POST'])
+def toggle_surveillance():
+    """Toggle surveillance on/off."""
+    global SURVEILLANCE_ACTIVE
+    data = request.get_json()
+    SURVEILLANCE_ACTIVE = data.get('active', True)
+    
+    # If resuming, reset to IDLE state
+    if SURVEILLANCE_ACTIVE:
+        set_state("IDLE")
+    
+    return jsonify({
+        "success": True,
+        "surveillance_active": SURVEILLANCE_ACTIVE
+    })
 
 
 # =============================================================================

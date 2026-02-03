@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CivicEye - Security Command Center</title>
+    <title>CivicEye - Unified Control Center</title>
     <link rel="stylesheet" href="style.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&family=Share+Tech+Mono&display=swap"
@@ -13,183 +13,290 @@
 
 <body>
     <div class="dashboard-container">
-        <!-- Header -->
-        <header class="dashboard-header">
-            <div class="header-left">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
                 <span class="logo-eye">👁️</span>
-                <div class="logo-text">
-                    <h1>CIVICEYE</h1>
-                    <span class="logo-subtitle">SECURITY COMMAND CENTER</span>
-                </div>
+                <h2>CIVIC<span>EYE</span></h2>
             </div>
-            <div class="header-center">
-                <div class="system-status">
-                    <span id="status-indicator" class="status-dot"></span>
-                    <span id="status-text">INITIALIZING...</span>
-                </div>
-            </div>
-            <div class="header-right">
-                <div class="datetime">
-                    <span id="current-time" class="time">00:00:00</span>
-                    <span id="current-date" class="date">01 FEB 2026</span>
-                </div>
-                <div class="operator-badge">
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="monitoring">
+                    <span class="nav-icon">🎥</span>
+                    <span class="nav-label">Live Monitoring</span>
+                </button>
+                <button class="nav-item" data-tab="display">
+                    <span class="nav-icon">📺</span>
+                    <span class="nav-label">Public Display</span>
+                </button>
+                <button class="nav-item" data-tab="alerts">
+                    <span class="nav-icon">🚨</span>
+                    <span class="nav-label">Security Alerts</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="operator-info">
                     <span class="operator-icon">👤</span>
-                    <span class="operator-name">ADMIN-001</span>
+                    <div>
+                        <div class="operator-name">ADMIN-001</div>
+                        <div class="operator-role">Security Officer</div>
+                        <div class="version">v1.2.0</div>
+                    </div>
                 </div>
             </div>
-        </header>
+        </aside>
 
-        <!-- Main Grid -->
-        <main class="dashboard-main">
-            <!-- Live Feed Panel -->
-            <section class="panel feed-panel">
-                <div class="panel-header">
-                    <span class="panel-icon">📹</span>
-                    <h2>LIVE SURVEILLANCE FEED</h2>
-                    <div class="live-badge">
-                        <span class="live-dot"></span>
-                        LIVE
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <div class="header-left">
+                    <h1 id="page-title">Live Monitoring</h1>
+                </div>
+                <div class="header-right">
+                    <button id="pause-surveillance-btn" class="surveillance-toggle-btn">
+                        <span class="btn-icon">⏸️</span>
+                        <span class="btn-text">PAUSE</span>
+                    </button>
+                    <div class="system-status">
+                        <span id="status-indicator" class="status-dot"></span>
+                        <span id="status-text">INITIALIZING...</span>
+                    </div>
+                    <div class="datetime">
+                        <span id="current-time" class="time">00:00:00</span>
+                        <span id="current-date" class="date">01 FEB 2026</span>
                     </div>
                 </div>
-                <div class="panel-content">
-                    <div class="video-container">
-                        <img id="video-feed" src="http://localhost:5000/video_feed" alt="Live Feed">
-                        <div class="video-overlay">
-                            <span class="camera-label">CAM-001 | SECTOR 7-G</span>
+            </header>
+
+            <!-- Tab Sections -->
+
+            <!-- 1. LIVE MONITORING TAB -->
+            <section id="tab-monitoring" class="tab-content active">
+                <div class="grid-2-1">
+                    <!-- Video Feed -->
+                    <div class="panel feed-panel">
+                        <div class="panel-header">
+                            <span class="panel-icon">📹</span>
+                            <h2>LIVE SURVEILLANCE FEED</h2>
+                            <div class="live-badge">
+                                <span class="live-dot"></span>
+                                LIVE
+                            </div>
+                        </div>
+                        <div class="panel-content">
+                            <div class="video-container">
+                                <img id="video-feed" src="http://localhost:5000/video_feed" alt="Live Feed">
+                                <div class="video-overlay">
+                                    <span class="camera-label">CAM-001 | SECTOR 7-G</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Panel -->
+                    <div class="panel stats-panel">
+                        <div class="panel-header">
+                            <span class="panel-icon">📊</span>
+                            <h2>SYSTEM METRICS</h2>
+                        </div>
+                        <div class="panel-content">
+                            <div class="stat-grid">
+                                <div class="stat-card">
+                                    <span class="stat-value" id="active-cameras">1</span>
+                                    <span class="stat-label">ACTIVE CAMERAS</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-value" id="alerts-today">0</span>
+                                    <span class="stat-label">ALERTS TODAY</span>
+                                </div>
+                                <div class="stat-card">
+                                    <span class="stat-value" id="confirmed-violations">0</span>
+                                    <span class="stat-label">CONFIRMED</span>
+                                </div>
+                                <div class="stat-card warning">
+                                    <span class="stat-value" id="pending-review">0</span>
+                                    <span class="stat-label">PENDING</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Panel -->
+                <div class="panel alert-panel" id="alert-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">🚨</span>
+                        <h2>ALERT CENTER</h2>
+                    </div>
+                    <div class="panel-content">
+                        <div id="no-alerts" class="no-alerts">
+                            <span class="check-icon">✓</span>
+                            <p>All Clear - No Active Alerts</p>
+                        </div>
+                        <div id="active-alert" class="active-alert hidden">
+                            <div class="alert-header">
+                                <span class="alert-icon">⚠️</span>
+                                <span class="alert-title">POTENTIAL VIOLATION DETECTED</span>
+                            </div>
+                            <div class="alert-details">
+                                <div class="alert-info">
+                                    <span class="info-label">DETECTED:</span>
+                                    <span id="alert-time" class="info-value">--:--:--</span>
+                                </div>
+                                <div class="alert-info">
+                                    <span class="info-label">LOCATION:</span>
+                                    <span class="info-value">Sector 7-G</span>
+                                </div>
+                                <div class="alert-info">
+                                    <span class="info-label">TYPE:</span>
+                                    <span class="info-value">Littering Incident</span>
+                                </div>
+                                <div class="alert-info">
+                                    <span class="info-label">TIMEOUT:</span>
+                                    <span id="alert-timeout" class="info-value timeout">30s</span>
+                                </div>
+                            </div>
+                            <div class="suspect-preview">
+                                <img id="suspect-photo" src="" alt="Suspect">
+                                <div class="suspect-info">
+                                    <span class="suspect-label">MATCHED CITIZEN</span>
+                                    <span id="suspect-id" class="suspect-id">CIV-XXX</span>
+                                    <span id="suspect-name" class="suspect-name">Unknown</span>
+                                </div>
+                            </div>
+                            <div class="alert-actions">
+                                <button id="confirm-btn" class="action-btn confirm">
+                                    <span class="btn-icon">✓</span>
+                                    CONFIRM VIOLATION
+                                </button>
+                                <button id="ignore-btn" class="action-btn ignore">
+                                    <span class="btn-icon">✗</span>
+                                    FALSE ALARM
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Stats Panel -->
-            <section class="panel stats-panel">
-                <div class="panel-header">
-                    <span class="panel-icon">📊</span>
-                    <h2>SYSTEM METRICS</h2>
-                </div>
-                <div class="panel-content">
-                    <div class="stat-grid">
-                        <div class="stat-card">
-                            <span class="stat-value" id="active-cameras">1</span>
-                            <span class="stat-label">ACTIVE CAMERAS</span>
+            <!-- 2. PUBLIC DISPLAY TAB -->
+            <section id="tab-display" class="tab-content">
+                <div class="grid-2-1">
+                    <!-- Display Preview -->
+                    <div class="panel display-preview-panel">
+                        <div class="panel-header">
+                            <span class="panel-icon">📺</span>
+                            <h2>PUBLIC DISPLAY PREVIEW</h2>
+                            <div class="display-toggle">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="display-toggle" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span id="display-status">ON</span>
+                            </div>
                         </div>
-                        <div class="stat-card">
-                            <span class="stat-value" id="alerts-today">0</span>
-                            <span class="stat-label">ALERTS TODAY</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-value" id="confirmed-violations">0</span>
-                            <span class="stat-label">CONFIRMED</span>
-                        </div>
-                        <div class="stat-card warning">
-                            <span class="stat-value" id="pending-review">0</span>
-                            <span class="stat-label">PENDING</span>
+                        <div class="panel-content">
+                            <div id="display-preview" class="display-simulator">
+                                <div id="display-idle" class="display-screen active">
+                                    <div class="display-logo">👁️ CIVICEYE</div>
+                                    <h1 class="display-title">SMART CITY SURVEILLANCE</h1>
+                                    <p class="display-subtitle">Keeping Our Community Clean & Safe</p>
+                                </div>
+                                <div id="display-warning" class="display-screen warning-screen">
+                                    <div class="warning-flash"></div>
+                                    <h1 class="warning-text" id="preview-warning-text">PLEASE PICK UP YOUR TRASH</h1>
+                                    <div class="countdown-circle">
+                                        <span id="preview-countdown">5</span>
+                                    </div>
+                                </div>
+                                <div id="display-shaming" class="display-screen shaming-screen">
+                                    <div class="shaming-header">CIVIC OFFENSE CONFIRMED</div>
+                                    <img id="preview-offender-photo" src="" alt="Offender" class="offender-photo">
+                                    <div class="offense-details">
+                                        <h2 id="preview-shaming-text">LITTERING IS A CIVIC OFFENSE</h2>
+                                        <p id="preview-fine-text">FINE: ₹500 | PRIOR OFFENSES LOGGED</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="uptime-bar">
-                        <span class="uptime-label">SYSTEM UPTIME</span>
-                        <div class="uptime-progress">
-                            <div class="uptime-fill" style="width: 99.7%"></div>
-                        </div>
-                        <span class="uptime-value">99.7%</span>
-                    </div>
-                </div>
-            </section>
 
-            <!-- Alert Panel -->
-            <section class="panel alert-panel" id="alert-panel">
-                <div class="panel-header">
-                    <span class="panel-icon">🚨</span>
-                    <h2>ALERT CENTER</h2>
-                </div>
-                <div class="panel-content">
-                    <div id="no-alerts" class="no-alerts">
-                        <span class="check-icon">✓</span>
-                        <p>All Clear - No Active Alerts</p>
-                    </div>
-                    <div id="active-alert" class="active-alert hidden">
-                        <div class="alert-header">
-                            <span class="alert-icon">⚠️</span>
-                            <span class="alert-title">POTENTIAL VIOLATION DETECTED</span>
+                    <!-- Display Controls -->
+                    <div class="panel display-controls-panel">
+                        <div class="panel-header">
+                            <span class="panel-icon">⚙️</span>
+                            <h2>DISPLAY CONTROLS</h2>
                         </div>
-                        <div class="alert-details">
-                            <div class="alert-info">
-                                <span class="info-label">DETECTED:</span>
-                                <span id="alert-time" class="info-value">--:--:--</span>
+                        <div class="panel-content">
+                            <div class="control-group">
+                                <label>WARNING MESSAGE</label>
+                                <textarea id="message-warning" rows="2"
+                                    placeholder="Enter warning message...">PLEASE PICK UP YOUR TRASH</textarea>
                             </div>
-                            <div class="alert-info">
-                                <span class="info-label">LOCATION:</span>
-                                <span class="info-value">Sector 7-G</span>
+                            <div class="control-group">
+                                <label>SHAMING MESSAGE</label>
+                                <textarea id="message-shaming" rows="2"
+                                    placeholder="Enter shaming message...">LITTERING IS A CIVIC OFFENSE</textarea>
                             </div>
-                            <div class="alert-info">
-                                <span class="info-label">TYPE:</span>
-                                <span class="info-value">Littering Incident</span>
+                            <div class="control-group">
+                                <label>FINE TEXT</label>
+                                <textarea id="message-fine" rows="2"
+                                    placeholder="Enter fine details...">FINE: ₹500 | PRIOR OFFENSES LOGGED</textarea>
                             </div>
-                            <div class="alert-info">
-                                <span class="info-label">TIMEOUT:</span>
-                                <span id="alert-timeout" class="info-value timeout">30s</span>
-                            </div>
-                        </div>
-                        <div class="suspect-preview">
-                            <img id="suspect-photo" src="" alt="Suspect">
-                            <div class="suspect-info">
-                                <span class="suspect-label">MATCHED CITIZEN</span>
-                                <span id="suspect-id" class="suspect-id">CIV-XXX</span>
-                                <span id="suspect-name" class="suspect-name">Unknown</span>
-                            </div>
-                        </div>
-                        <div class="alert-actions">
-                            <button id="confirm-btn" class="action-btn confirm">
-                                <span class="btn-icon">✓</span>
-                                CONFIRM VIOLATION
+                            <button id="save-messages-btn" class="action-btn primary">
+                                💾 SAVE MESSAGES
                             </button>
-                            <button id="ignore-btn" class="action-btn ignore">
-                                <span class="btn-icon">✗</span>
-                                FALSE ALARM
-                            </button>
+
+                            <div class="divider"></div>
+
+                            <div class="control-group">
+                                <label>MANUAL TRIGGERS</label>
+                                <div class="button-group">
+                                    <button id="demo-trigger" class="demo-btn">🔔 TRIGGER WARNING</button>
+                                    <button id="demo-reset" class="demo-btn reset">↺ RESET</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- Incident Log Panel -->
-            <section class="panel log-panel">
-                <div class="panel-header">
-                    <span class="panel-icon">📋</span>
-                    <h2>INCIDENT LOG</h2>
-                    <button id="refresh-logs" class="refresh-btn">↻</button>
-                </div>
-                <div class="panel-content">
-                    <div class="log-header">
-                        <span>TIME</span>
-                        <span>CITIZEN ID</span>
-                        <span>STATUS</span>
-                        <span>ACTION</span>
+            <!-- 3. SECURITY ALERTS TAB -->
+            <section id="tab-alerts" class="tab-content">
+                <!-- Recent Alerts (Last 5) -->
+                <div class="panel recent-alerts-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">🚨</span>
+                        <h2>RECENT ALERTS (LAST 5)</h2>
                     </div>
-                    <div id="log-entries" class="log-entries">
-                        <div class="log-empty">No incidents recorded</div>
+                    <div class="panel-content">
+                        <div id="recent-alerts-list" class="alerts-list">
+                            <div class="alert-empty">No recent alerts</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Incident Log -->
+                <div class="panel log-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">📋</span>
+                        <h2>INCIDENT LOG</h2>
+                        <button id="refresh-logs" class="refresh-btn">↻ REFRESH</button>
+                    </div>
+                    <div class="panel-content">
+                        <div class="log-header">
+                            <span>TIME</span>
+                            <span>CITIZEN ID</span>
+                            <span>STATUS</span>
+                            <span>ACTION</span>
+                        </div>
+                        <div id="log-entries" class="log-entries">
+                            <div class="log-empty">No incidents recorded</div>
+                        </div>
                     </div>
                 </div>
             </section>
         </main>
-
-        <!-- Footer -->
-        <footer class="dashboard-footer">
-            <div class="footer-left">
-                <span class="network-status">
-                    <span class="network-dot online"></span>
-                    API CONNECTED
-                </span>
-            </div>
-            <div class="footer-center">
-                <span>CivicEye v1.0.0 | AMD SLINGSHOT 2026</span>
-            </div>
-            <div class="footer-right">
-                <button id="demo-trigger" class="demo-btn">🔔 DEMO: Trigger Alert</button>
-                <button id="demo-reset" class="demo-btn reset">↺ RESET</button>
-            </div>
-        </footer>
     </div>
 
     <!-- Alert Sound -->

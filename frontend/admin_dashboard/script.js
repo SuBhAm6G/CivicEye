@@ -1,10 +1,10 @@
 /**
- * CivicEye Admin Dashboard - JavaScript Controller
- * Handles live feed, status polling, alert management, and admin actions
+ * CivicEye Unified Dashboard - JavaScript Controller
+ * Handles tab navigation, monitoring, display control, and security alerts
  */
 
 // =============================================================================
-// Configuration
+//CONFIG
 // =============================================================================
 
 const CONFIG = {
@@ -14,18 +14,30 @@ const CONFIG = {
 };
 
 // =============================================================================
-// State Management
+// STATE MANAGEMENT
 // =============================================================================
 
 let currentState = null;
 let pollInterval = null;
 let logRefreshInterval = null;
+let currentTab = 'monitoring';
 
 // =============================================================================
-// DOM Elements
+// DOM ELEMENTS
 // =============================================================================
 
 const elements = {
+    // Navigation
+    navItems: document.querySelectorAll('.nav-item'),
+    pageTitle: document.getElementById('page-title'),
+
+    // Tabs
+    tabs: {
+        monitoring: document.getElementById('tab-monitoring'),
+        display: document.getElementById('tab-display'),
+        alerts: document.getElementById('tab-alerts')
+    },
+
     // Status
     statusIndicator: document.getElementById('status-indicator'),
     statusText: document.getElementById('status-text'),
@@ -54,11 +66,29 @@ const elements = {
     // Buttons
     confirmBtn: document.getElementById('confirm-btn'),
     ignoreBtn: document.getElementById('ignore-btn'),
-    refreshLogs: document.getElementById('refresh-logs'),
+    pauseSurveillanceBtn: document.getElementById('pause-surveillance-btn'),
+
+    // Display Control
+    displayToggle: document.getElementById('display-toggle'),
+    displayStatus: document.getElementById('display-status'),
+    displayIdle: document.getElementById('display-idle'),
+    displayWarning: document.getElementById('display-warning'),
+    displayShaming: document.getElementById('display-shaming'),
+    previewCountdown: document.getElementById('preview-countdown'),
+    previewWarningText: document.getElementById('preview-warning-text'),
+    previewShamingText: document.getElementById('preview-shaming-text'),
+    previewFineText: document.getElementById('preview-fine-text'),
+    previewOffenderPhoto: document.getElementById('preview-offender-photo'),
+    messageWarning: document.getElementById('message-warning'),
+    messageShaming: document.getElementById('message-shaming'),
+    messageFine: document.getElementById('message-fine'),
+    saveMessagesBtn: document.getElementById('save-messages-btn'),
     demoTrigger: document.getElementById('demo-trigger'),
     demoReset: document.getElementById('demo-reset'),
 
-    // Logs
+    // Security Alerts
+    recentAlertsList: document.getElementById('recent-alerts-list'),
+    refreshLogs: document.getElementById('refresh-logs'),
     logEntries: document.getElementById('log-entries'),
 
     // Audio
@@ -66,11 +96,11 @@ const elements = {
 };
 
 // =============================================================================
-// Initialization
+// INITIALIZATION
 // =============================================================================
 
 function init() {
-    console.log('CivicEye Admin Dashboard initializing...');
+    console.log('CivicEye Unified Dashboard initializing...');
 
     // Start clock
     updateClock();
@@ -87,48 +117,104 @@ function init() {
     // Set up event listeners
     setupEventListeners();
 
-    console.log('Admin Dashboard initialized');
+    console.log('Unified Dashboard initialized');
 }
 
 function setupEventListeners() {
-    // Confirm violation
+    // Tab navigation
+    elements.navItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const tab = item.dataset.tab;
+            switchTab(tab);
+        });
+    });
+
+    // Alert actions
     if (elements.confirmBtn) {
         elements.confirmBtn.addEventListener('click', (e) => {
             e.preventDefault();
             console.log('Confirm button clicked');
             sendAction('CONFIRM');
         });
-    } else {
-        console.error('Confirm button not found!');
     }
 
-    // Ignore/False alarm
     if (elements.ignoreBtn) {
         elements.ignoreBtn.addEventListener('click', (e) => {
             e.preventDefault();
             console.log('Ignore button clicked');
             sendAction('IGNORE');
         });
-    } else {
-        console.error('Ignore button not found!');
+    }
+
+    // Pause/Resume Surveillance
+    if (elements.pauseSurveillanceBtn) {
+        elements.pauseSurveillanceBtn.addEventListener('click', toggleSurveillance);
+    }
+
+    // Display controls
+    if (elements.displayToggle) {
+        elements.displayToggle.addEventListener('change', toggleDisplay);
+    }
+
+    if (elements.saveMessagesBtn) {
+        elements.saveMessagesBtn.addEventListener('click', saveMessages);
+    }
+
+    if (elements.demoTrigger) {
+        elements.demoTrigger.addEventListener('click', triggerDemoAlert);
+    }
+
+    if (elements.demoReset) {
+        elements.demoReset.addEventListener('click', resetDemo);
     }
 
     // Refresh logs
     if (elements.refreshLogs) {
-        elements.refreshLogs.addEventListener('click', fetchLogs);
-    }
-
-    // Demo buttons
-    if (elements.demoTrigger) {
-        elements.demoTrigger.addEventListener('click', triggerDemoAlert);
-    }
-    if (elements.demoReset) {
-        elements.demoReset.addEventListener('click', resetDemo);
+        elements.refreshLogs.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log('Refresh logs clicked');
+            fetchLogs();
+        });
     }
 }
 
 // =============================================================================
-// Clock
+// TAB NAVIGATION
+// =============================================================================
+
+function switchTab(tabName) {
+    console.log(`Switching to tab: ${tabName}`);
+    currentTab = tabName;
+
+    // Update nav items
+    elements.navItems.forEach(item => {
+        if (item.dataset.tab === tabName) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+
+    // Update tab content
+    Object.keys(elements.tabs).forEach(key => {
+        if (key === tabName) {
+            elements.tabs[key].classList.add('active');
+        } else {
+            elements.tabs[key].classList.remove('active');
+        }
+    });
+
+    // Update page title
+    const titles = {
+        monitoring: 'Live Monitoring',
+        display: 'Public Display Control',
+        alerts: 'Security Alerts'
+    };
+    elements.pageTitle.textContent = titles[tabName] || tabName;
+}
+
+// =============================================================================
+// CLOCK
 // =============================================================================
 
 function updateClock() {
@@ -150,7 +236,7 @@ function updateClock() {
 }
 
 // =============================================================================
-// API Communication
+// API COMMUNICATION
 // =============================================================================
 
 async function fetchStatus() {
@@ -159,6 +245,7 @@ async function fetchStatus() {
         const data = await response.json();
 
         updateStatusDisplay(data);
+        updateDisplayPreview(data);
 
         if (data.state !== currentState) {
             handleStateChange(data.state, data.offender_details);
@@ -167,6 +254,22 @@ async function fetchStatus() {
         // Update timeout display
         if (data.timeout_remaining !== null) {
             elements.alertTimeout.textContent = `${Math.ceil(data.timeout_remaining)}s`;
+            if (elements.previewCountdown) {
+                elements.previewCountdown.textContent = Math.ceil(data.timeout_remaining);
+            }
+        }
+
+        // Update custom messages in textareas
+        if (data.custom_messages) {
+            if (elements.messageWarning.value === '' || !elements.messageWarning.dataset.edited) {
+                elements.messageWarning.value = data.custom_messages.warning;
+            }
+            if (elements.messageShaming.value === '' || !elements.messageShaming.dataset.edited) {
+                elements.messageShaming.value = data.custom_messages.shaming;
+            }
+            if (elements.messageFine.value === '' || !elements.messageFine.dataset.edited) {
+                elements.messageFine.value = data.custom_messages.fine;
+            }
         }
 
     } catch (error) {
@@ -183,6 +286,7 @@ async function fetchLogs() {
         const data = await response.json();
 
         updateLogDisplay(data.incidents);
+        updateRecentAlerts(data.incidents);
         updateStats(data.incidents);
 
     } catch (error) {
@@ -258,8 +362,87 @@ async function resetDemo() {
     }
 }
 
+async function toggleDisplay() {
+    const enabled = elements.displayToggle.checked;
+    elements.displayStatus.textContent = enabled ? 'ON' : 'OFF';
+    elements.displayStatus.style.color = enabled ? 'var(--accent-green)' : 'var(--accent-red)';
+
+    try {
+        const response = await fetch(`${CONFIG.API_BASE}/display/toggle`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled })
+        });
+        const data = await response.json();
+        console.log('Display toggle response:', data);
+    } catch (error) {
+        console.error('Display toggle error:', error);
+    }
+}
+
+async function saveMessages() {
+    const messages = {
+        warning: elements.messageWarning.value,
+        shaming: elements.messageShaming.value,
+        fine: elements.messageFine.value
+    };
+
+    try {
+        const response = await fetch(`${CONFIG.API_BASE}/display/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(messages)
+        });
+        const data = await response.json();
+        console.log('Messages saved:', data);
+
+        // Update preview
+        elements.previewWarningText.textContent = messages.warning;
+        elements.previewShamingText.textContent = messages.shaming;
+        elements.previewFineText.textContent = messages.fine;
+
+        alert('Messages saved successfully!');
+    } catch (error) {
+        console.error('Save messages error:', error);
+        alert('Failed to save messages');
+    }
+}
+
+async function toggleSurveillance() {
+    const btn = elements.pauseSurveillanceBtn;
+    const isPaused = btn.classList.contains('paused');
+    const newState = !isPaused; // true = active, false = paused
+
+    try {
+        const response = await fetch(`${CONFIG.API_BASE}/surveillance/toggle`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ active: newState })
+        });
+        const data = await response.json();
+        console.log('Surveillance toggle response:', data);
+
+        if (data.success) {
+            if (newState) {
+                // Resuming
+                btn.classList.remove('paused');
+                btn.querySelector('.btn-icon').textContent = '⏸️';
+                btn.querySelector('.btn-text').textContent = 'PAUSE';
+            } else {
+                // Pausing
+                btn.classList.add('paused');
+                btn.querySelector('.btn-icon').textContent = '▶️';
+                btn.querySelector('.btn-text').textContent = 'RESUME';
+            }
+        }
+    } catch (error) {
+        console.error('Surveillance toggle error:', error);
+        alert('Failed to toggle surveillance');
+    }
+}
+
 // =============================================================================
-// State Handling
+// STATE HANDLING
 // =============================================================================
 
 function handleStateChange(newState, offenderDetails) {
@@ -288,7 +471,6 @@ function updateStatusDisplay(data) {
 
     switch (state) {
         case 'IDLE':
-            elements.statusIndicator.classList.add('');
             elements.statusIndicator.style.background = '#00ff88';
             elements.statusText.textContent = 'SYSTEM ONLINE';
             break;
@@ -353,8 +535,79 @@ function showShamingState(offenderDetails) {
 }
 
 // =============================================================================
-// Log Display
+// DISPLAY PREVIEW
 // =============================================================================
+
+function updateDisplayPreview(data) {
+    const state = data.state;
+
+    // Hide all screens
+    elements.displayIdle.classList.remove('active');
+    elements.displayWarning.classList.remove('active');
+    elements.displayShaming.classList.remove('active');
+
+    // Show appropriate screen
+    switch (state) {
+        case 'IDLE':
+            elements.displayIdle.classList.add('active');
+            break;
+        case 'WARNING':
+        case 'PENDING_REVIEW':
+            elements.displayWarning.classList.add('active');
+            if (data.custom_messages) {
+                elements.previewWarningText.textContent = data.custom_messages.warning;
+            }
+            break;
+        case 'SHAMING':
+            elements.displayShaming.classList.add('active');
+            if (data.offender_details) {
+                elements.previewOffenderPhoto.src = data.offender_details.photo_url || 'https://via.placeholder.com/150?text=?';
+            }
+            if (data.custom_messages) {
+                elements.previewShamingText.textContent = data.custom_messages.shaming;
+                elements.previewFineText.textContent = data.custom_messages.fine;
+            }
+            break;
+    }
+}
+
+// =============================================================================
+// SECURITY ALERTS
+// =============================================================================
+
+function updateRecentAlerts(incidents) {
+    if (!incidents || incidents.length === 0) {
+        elements.recentAlertsList.innerHTML = '<div class="alert-empty">No recent alerts</div>';
+        return;
+    }
+
+    // Sort by timestamp (newest first) and take last 5
+    const sorted = [...incidents].sort((a, b) =>
+        new Date(b.timestamp) - new Date(a.timestamp)
+    ).slice(0, 5);
+
+    let html = '';
+    for (const incident of sorted) {
+        const time = new Date(incident.timestamp).toLocaleTimeString();
+        const citizenId = incident.offender?.id || 'UNKNOWN';
+        const photoUrl = incident.offender?.photo_url || 'https://via.placeholder.com/60?text=?';
+
+        html += `
+            <div class="alert-card">
+                <img src="${photoUrl}" alt="Offender">
+                <div class="alert-card-info">
+                    <div class="alert-card-header">
+                        <span class="alert-card-id">${citizenId}</span>
+                        <span class="alert-card-time">${time}</span>
+                    </div>
+                    <div class="alert-card-type">Littering Incident</div>
+                </div>
+            </div>
+        `;
+    }
+
+    elements.recentAlertsList.innerHTML = html;
+}
 
 function updateLogDisplay(incidents) {
     if (!incidents || incidents.length === 0) {
@@ -401,7 +654,7 @@ function updateStats(incidents) {
 }
 
 // =============================================================================
-// Audio
+// AUDIO
 // =============================================================================
 
 function playAlertSound() {
@@ -422,7 +675,18 @@ function stopAlertSound() {
 }
 
 // =============================================================================
-// Initialize on DOM Load
+// INITIALIZE ON DOM LOAD
 // =============================================================================
 
 document.addEventListener('DOMContentLoaded', init);
+
+// Mark textareas as edited when user types
+document.addEventListener('DOMContentLoaded', () => {
+    [elements.messageWarning, elements.messageShaming, elements.messageFine].forEach(el => {
+        if (el) {
+            el.addEventListener('input', () => {
+                el.dataset.edited = 'true';
+            });
+        }
+    });
+});
