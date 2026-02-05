@@ -32,6 +32,10 @@
                     <span class="nav-icon">🚨</span>
                     <span class="nav-label">Security Alerts</span>
                 </button>
+                <button class="nav-item" data-tab="messages">
+                    <span class="nav-icon">📤</span>
+                    <span class="nav-label">Sent Messages</span>
+                </button>
             </nav>
             <div class="sidebar-footer">
                 <div class="operator-info">
@@ -292,6 +296,25 @@
                         </div>
                         <div id="log-entries" class="log-entries">
                             <div class="log-empty">No incidents recorded</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. SENT MESSAGES TAB -->
+            <section id="tab-messages" class="tab-content">
+                <div class="panel messages-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">📤</span>
+                        <h2>SENT MESSAGES LOG</h2>
+                        <div class="live-badge" style="background: rgba(37, 211, 102, 0.2); color: #25D366;">
+                            <span class="live-dot" style="background: #25D366;"></span>
+                            AUTO-DISPATCH ACTIVE
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <div id="sent-messages-list" class="messages-list">
+                            <div class="alert-empty">No messages sent yet</div>
                         </div>
                     </div>
                 </div>

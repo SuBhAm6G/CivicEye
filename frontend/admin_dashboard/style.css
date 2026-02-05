@@ -1014,3 +1014,125 @@ input:checked+.toggle-slider:before {
 .hidden {
     display: none !important;
 }
+
+/* ========================================================================== */
+/* SENT MESSAGES (WHATSAPP STYLE) */
+/* ========================================================================== */
+
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.dispatch-group {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 217, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.dispatch-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.whatsapp-cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.whatsapp-card {
+    background: #075E54;
+    /* WhatsApp Dark Green */
+    border-radius: 10px;
+    padding: 15px;
+    position: relative;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    border-left: 5px solid #25D366;
+}
+
+.whatsapp-card::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: -10px;
+    border-width: 10px 10px 10px 0;
+    border-style: solid;
+    border-color: transparent #075E54 transparent transparent;
+}
+
+.wa-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.wa-icon {
+    font-size: 1.5rem;
+    color: #25D366;
+}
+
+.guard-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.guard-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #fff;
+}
+
+.guard-phone {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.wa-body {
+    background: #DCF8C6;
+    color: #000;
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 10px;
+}
+
+.wa-img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.wa-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.wa-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.double-tick {
+    color: #34B7F1;
+    /* Read receipt blue */
+    font-weight: bold;
+}

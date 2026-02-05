@@ -35,7 +35,8 @@ const elements = {
     tabs: {
         monitoring: document.getElementById('tab-monitoring'),
         display: document.getElementById('tab-display'),
-        alerts: document.getElementById('tab-alerts')
+        alerts: document.getElementById('tab-alerts'),
+        messages: document.getElementById('tab-messages')
     },
 
     // Status
@@ -88,6 +89,7 @@ const elements = {
 
     // Security Alerts
     recentAlertsList: document.getElementById('recent-alerts-list'),
+    sentMessagesList: document.getElementById('sent-messages-list'),
     refreshLogs: document.getElementById('refresh-logs'),
     logEntries: document.getElementById('log-entries'),
 
@@ -208,7 +210,8 @@ function switchTab(tabName) {
     const titles = {
         monitoring: 'Live Monitoring',
         display: 'Public Display Control',
-        alerts: 'Security Alerts'
+        alerts: 'Security Alerts',
+        messages: 'Sent Messages Log'
     };
     elements.pageTitle.textContent = titles[tabName] || tabName;
 }
@@ -287,6 +290,7 @@ async function fetchLogs() {
 
         updateLogDisplay(data.incidents);
         updateRecentAlerts(data.incidents);
+        updateSentMessages(data.incidents);
         updateStats(data.incidents);
 
     } catch (error) {
@@ -608,6 +612,89 @@ function updateRecentAlerts(incidents) {
     }
 
     elements.recentAlertsList.innerHTML = html;
+}
+
+function updateSentMessages(incidents) {
+    if (!incidents || incidents.length === 0) {
+        elements.sentMessagesList.innerHTML = '<div class="alert-empty">No messages sent yet</div>';
+        return;
+    }
+
+    // Filter for CONFIRMED incidents (sorted newest first)
+    const confirmed = incidents.filter(i => i.status === 'CONFIRMED')
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+    if (confirmed.length === 0) {
+        elements.sentMessagesList.innerHTML = '<div class="alert-empty">No messages sent yet</div>';
+        return;
+    }
+
+    let html = '';
+    confirmed.forEach(incident => {
+        const time = new Date(incident.timestamp).toLocaleTimeString();
+        const date = new Date(incident.timestamp).toDateString();
+        const photoUrl = incident.offender?.photo_url || 'https://via.placeholder.com/60';
+        const location = "Sector 7-G (Main Gate)"; // Hardcoded for now as per context
+
+        html += `
+            <div class="dispatch-group">
+                <div class="dispatch-header">
+                    <span>DISPATCH ID: ${incident.id}</span>
+                    <span>SENT: ${time} | ${date}</span>
+                </div>
+                
+                <div class="whatsapp-cards-container">
+                    <!-- GUARD 1 -->
+                    <div class="whatsapp-card">
+                        <div class="wa-header">
+                            <span class="wa-icon">📱</span>
+                            <div class="guard-info">
+                                <span class="guard-name">Suresh Kumar (Security Head)</span>
+                                <span class="guard-phone">+91 98765 43210</span>
+                            </div>
+                        </div>
+                        <div class="wa-body">
+                            <img src="${photoUrl}" class="wa-img" alt="Suspect">
+                            <div class="wa-text">
+                                <strong>⚠️ VIOLATION ALERT</strong>
+                                <span>Loc: ${location}</span>
+                                <span>Time: ${time}</span>
+                            </div>
+                        </div>
+                        <div class="wa-footer">
+                            <span>1 min ago</span>
+                            <span class="double-tick">✓✓</span>
+                        </div>
+                    </div>
+
+                    <!-- GUARD 2 -->
+                    <div class="whatsapp-card">
+                        <div class="wa-header">
+                            <span class="wa-icon">📱</span>
+                            <div class="guard-info">
+                                <span class="guard-name">Rajesh Singh (Patrol Unit)</span>
+                                <span class="guard-phone">+91 91234 56789</span>
+                            </div>
+                        </div>
+                        <div class="wa-body">
+                            <img src="${photoUrl}" class="wa-img" alt="Suspect">
+                            <div class="wa-text">
+                                <strong>⚠️ VIOLATION ALERT</strong>
+                                <span>Loc: ${location}</span>
+                                <span>Time: ${time}</span>
+                            </div>
+                        </div>
+                        <div class="wa-footer">
+                            <span>Just now</span>
+                            <span class="double-tick">✓✓</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    elements.sentMessagesList.innerHTML = html;
 }
 
 function updateLogDisplay(incidents) {
