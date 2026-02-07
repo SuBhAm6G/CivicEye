@@ -1,6 +1,6 @@
 # 👁️ CivicEye - AI-Powered Litter Surveillance System
 
-**Version 1.2.0**
+**Version 1.3.0**
 
 CivicEye is an intelligent surveillance system that uses AI to detect littering incidents in real-time, identify offenders, and manage the enforcement workflow through an intuitive unified dashboard.
 
