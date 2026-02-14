@@ -75,5 +75,84 @@
     },
     "status": "CONFIRMED",
     "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1770717435",
+    "timestamp": "2026-02-10T15:27:15.780450",
+    "offender": {
+      "id": "VIO-20260210_152645",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260210_152645.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1770717570",
+    "timestamp": "2026-02-10T15:29:30.979193",
+    "offender": {
+      "id": "CIV-001",
+      "name": "John Doe",
+      "photo_url": "https://randomuser.me/api/portraits/men/1.jpg",
+      "prior_offenses": 2,
+      "match_confidence": 0.95
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1770717705",
+    "timestamp": "2026-02-10T15:31:45.436843",
+    "offender": {
+      "id": "VIO-20260210_153135",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260210_153135.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1771049668",
+    "timestamp": "2026-02-14T11:44:28.222082",
+    "offender": {
+      "id": "VIO-20260214_114424",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260214_114424.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1771049956",
+    "timestamp": "2026-02-14T11:49:16.890105",
+    "offender": {
+      "id": "VIO-20260214_114913",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260214_114913.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1771049957",
+    "timestamp": "2026-02-14T11:49:17.617886",
+    "offender": {
+      "id": "VIO-20260214_114913",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260214_114913.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1771049976",
+    "timestamp": "2026-02-14T11:49:36.402634",
+    "offender": {
+      "id": "VIO-20260214_114933",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260214_114933.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
   }
 ]

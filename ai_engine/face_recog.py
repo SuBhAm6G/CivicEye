@@ -17,7 +17,7 @@ class FaceMatcher:
     def __init__(self, database_path=None):
         """Initialize FaceMatcher with path to dummy criminals database."""
         if database_path is None:
-            # Default path relative to project root
+            # Default path (relative to project root)
             self.database_path = os.path.join(
                 os.path.dirname(os.path.dirname(__file__)),
                 'backend', 'database', 'dummy_criminals.json'
@@ -84,7 +84,7 @@ class FaceMatcher:
         if not self.criminals_db:
             return None
             
-        # Return random criminal for demo purposes
+        # Returns random criminal for demo purposes
         criminal = random.choice(self.criminals_db)
         return {
             "id": criminal["id"],
