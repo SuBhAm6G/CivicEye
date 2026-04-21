@@ -286,5 +286,18 @@
     },
     "status": "CONFIRMED",
     "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1776784657",
+    "timestamp": "2026-04-21T20:47:37.727601",
+    "offender": {
+      "id": "VIO-20260421_204729",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260421_204729.jpg",
+      "match_confidence": 0.94,
+      "prior_offenses": 0
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
   }
 ]

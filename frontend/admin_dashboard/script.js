@@ -63,6 +63,9 @@ const elements = {
     suspectPhoto: document.getElementById('suspect-photo'),
     suspectId: document.getElementById('suspect-id'),
     suspectName: document.getElementById('suspect-name'),
+    suspectConfidence: document.getElementById('suspect-confidence'),
+    confidenceBarFill: document.getElementById('confidence-bar-fill'),
+    suspectPriors: document.getElementById('suspect-priors'),
 
     // Buttons
     confirmBtn: document.getElementById('confirm-btn'),
@@ -505,6 +508,30 @@ function showAlert(offenderDetails) {
         elements.suspectPhoto.src = offenderDetails.photo_url || 'https://via.placeholder.com/70?text=?';
         elements.suspectId.textContent = offenderDetails.id || 'UNKNOWN';
         elements.suspectName.textContent = offenderDetails.name || 'Unknown Citizen';
+
+        // Confidence score
+        const conf = offenderDetails.match_confidence;
+        if (conf !== undefined && conf !== null) {
+            const pct = Math.round(conf * 100);
+            elements.suspectConfidence.textContent = `${pct}%`;
+            // Color: green >=90, yellow >=75, red below
+            const color = pct >= 90 ? '#00ff88' : pct >= 75 ? '#ffaa00' : '#ff3366';
+            elements.suspectConfidence.style.color = color;
+            // Animate the bar fill
+            elements.confidenceBarFill.style.width = '0%';
+            elements.confidenceBarFill.style.background = color;
+            setTimeout(() => {
+                elements.confidenceBarFill.style.width = `${pct}%`;
+            }, 50);
+        } else {
+            elements.suspectConfidence.textContent = 'N/A';
+            elements.confidenceBarFill.style.width = '0%';
+        }
+
+        // Prior offenses badge
+        const priors = offenderDetails.prior_offenses ?? 0;
+        elements.suspectPriors.textContent = priors;
+        elements.suspectPriors.className = `priors-badge ${priors >= 3 ? 'high' : priors >= 1 ? 'medium' : 'none'}`;
     }
 
     // Update pending count

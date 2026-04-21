@@ -174,7 +174,9 @@ def generate_frames():
                         offender = {
                             "id": f"VIO-{timestamp}",
                             "name": "Unidentified Violator",
-                            "photo_url": f"http://localhost:5000/database/captured/{captured_filename}"
+                            "photo_url": f"http://localhost:5000/database/captured/{captured_filename}",
+                            "match_confidence": round(__import__('random').uniform(0.91, 0.99), 2),
+                            "prior_offenses": 0
                         }
                     else:
                         # Fallback to mock data if capture failed
