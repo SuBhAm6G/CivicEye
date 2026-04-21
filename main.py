@@ -94,7 +94,7 @@ def run_server(video_source):
     from backend.app import app, init_detector, set_video_source
     
     # Initialize detector
-    print("🔧 Loading YOLOv8 model...")
+    print("🔧 Loading YOLOv8s model...")
     try:
         init_detector()
         print("✅ AI detector initialized")

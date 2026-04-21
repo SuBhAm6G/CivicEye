@@ -154,5 +154,137 @@
     },
     "status": "CONFIRMED",
     "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1771312938",
+    "timestamp": "2026-02-17T12:52:18.551018",
+    "offender": {
+      "id": "VIO-20260217_125208",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260217_125208.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1771313247",
+    "timestamp": "2026-02-17T12:57:27.710590",
+    "offender": {
+      "id": "VIO-20260217_125721",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260217_125721.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1771313976",
+    "timestamp": "2026-02-17T13:09:36.105670",
+    "offender": {
+      "id": "VIO-20260217_130928",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260217_130928.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1771314230",
+    "timestamp": "2026-02-17T13:13:50.379316",
+    "offender": {
+      "id": "VIO-20260217_131332",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260217_131332.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1771476761",
+    "timestamp": "2026-02-19T10:22:41.730348",
+    "offender": {
+      "id": "VIO-20260219_102226",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260219_102226.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1771477288",
+    "timestamp": "2026-02-19T10:31:28.754763",
+    "offender": {
+      "id": "VIO-20260219_103116",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260219_103116.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1775977145",
+    "timestamp": "2026-04-12T12:29:05.707090",
+    "offender": {
+      "id": "VIO-20260412_122854",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260412_122854.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1775978126",
+    "timestamp": "2026-04-12T12:45:26.352254",
+    "offender": {
+      "id": "VIO-20260412_124513",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260412_124513.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1775979379",
+    "timestamp": "2026-04-12T13:06:19.109695",
+    "offender": {
+      "id": "VIO-20260412_130600",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260412_130600.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1775979441",
+    "timestamp": "2026-04-12T13:07:21.442640",
+    "offender": {
+      "id": "VIO-20260412_130710",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260412_130710.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1776265496",
+    "timestamp": "2026-04-15T20:34:56.979028",
+    "offender": {
+      "id": "VIO-20260415_203449",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260415_203449.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
+  },
+  {
+    "id": "INC-1776783583",
+    "timestamp": "2026-04-21T20:29:43.090724",
+    "offender": {
+      "id": "VIO-20260421_202935",
+      "name": "Unidentified Violator",
+      "photo_url": "http://localhost:5000/database/captured/violator_20260421_202935.jpg"
+    },
+    "status": "CONFIRMED",
+    "action_by": "ADMIN-001"
   }
 ]

@@ -59,7 +59,7 @@ video_source = None
 def init_detector(model_path='yolov8n.pt'):
     """Initialize the litter detector."""
     global litter_monitor
-    litter_monitor = LitterMonitor(model_path)
+    litter_monitor = LitterMonitor('yolov8s.pt')
 
 
 def set_video_source(source):
@@ -433,5 +433,5 @@ def demo_reset():
 # =============================================================================
 
 if __name__ == '__main__':
-    init_detector()
+    init_detector('yolov8s.pt')
     app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)

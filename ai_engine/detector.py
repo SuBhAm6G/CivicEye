@@ -16,7 +16,7 @@ class LitterMonitor:
     Implements velocity checks and grace timer for accurate detection.
     """
     
-    def __init__(self, model_path='yolov8n.pt'):
+    def __init__(self, model_path='yolov8s.pt'):
         """Initializing the LitterMonitor with YOLOv8 model."""
         self.model = YOLO(model_path)
         
