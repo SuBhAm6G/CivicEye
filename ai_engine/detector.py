@@ -59,7 +59,8 @@ class LitterMonitor:
         # Frame buffer for capturing past moments (stores last 10 seconds at ~30 fps)
         # Each entry: (timestamp, frame_copy)
         self.frame_buffer = deque(maxlen=300)  # 10 seconds * 30 fps = 300 frames
-        self.capture_delay = 7.0  # Capture from 7 seconds ago
+        self.capture_delay_start = 10.0  # Capture from 10 seconds ago
+        self.capture_delay_end = 7.0    # to 7 seconds ago
         
         # Simple tracking with counter
         self.next_bottle_id = 0
@@ -82,24 +83,25 @@ class LitterMonitor:
         """Calculating Euclidean distance between two points."""
         return np.sqrt((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)
     
-    def _get_past_frame(self, seconds_ago):
-        """Get frame from N seconds ago from the buffer."""
+    def _get_past_frames(self, start_seconds_ago, end_seconds_ago):
+        """Get sequence of frames from start_seconds_ago to end_seconds_ago."""
         if len(self.frame_buffer) == 0:
-            return None
+            return []
+            
+        current_time = time.time()
+        start_target = current_time - start_seconds_ago
+        end_target = current_time - end_seconds_ago
         
-        target_time = time.time() - seconds_ago
-        
-        # Find the frame closest to target_time
-        closest_frame = None
-        min_time_diff = float('inf')
-        
+        frames = []
         for timestamp, frame in self.frame_buffer:
-            time_diff = abs(timestamp - target_time)
-            if time_diff < min_time_diff:
-                min_time_diff = time_diff
-                closest_frame = frame
-        
-        return closest_frame if closest_frame is not None else self.frame_buffer[-1][1]
+            if start_target <= timestamp <= end_target:
+                frames.append(frame)
+                
+        # If no frames perfectly matched the window, return the closest ones we have or empty list
+        if not frames and len(self.frame_buffer) > 0:
+            return [self.frame_buffer[-1][1]]
+            
+        return frames
     
     def _match_bottle_to_track(self, centroid, threshold=50):
         """Simple tracking: match detection to existing track or create new."""
@@ -252,8 +254,8 @@ class LitterMonitor:
                 elif time.time() - self.grace_start_time >= self.GRACE_PERIOD:
                     self.current_state = "WARNING"
                     self.grace_start_time = None
-                    # Capture frame from 7 seconds ago (before grace period started)
-                    self.captured_violator_frame = self._get_past_frame(self.capture_delay)
+                    # Capture footage from -10s to -7s
+                    self.captured_violator_frames = self._get_past_frames(self.capture_delay_start, self.capture_delay_end)
             else:
                 self.grace_start_time = None
                 
@@ -322,10 +324,22 @@ class LitterMonitor:
         """Get the captured violator frame."""
         return self.captured_violator_frame
     
-    def save_captured_frame(self, save_path):
-        """Save the captured frame to disk."""
-        if self.captured_violator_frame is not None:
+    def save_captured_video(self, save_path):
+        """Save the captured frames to disk as an MP4 video."""
+        if hasattr(self, 'captured_violator_frames') and self.captured_violator_frames:
             import cv2
-            cv2.imwrite(save_path, self.captured_violator_frame)
+            frames = self.captured_violator_frames
+            height, width, _ = frames[0].shape
+            
+            # Using mp4v codec for standard mp4
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+            # Determine a rough FPS based on how many frames we got in the 3 second window
+            fps = len(frames) / 3.0 if len(frames) > 0 else 30.0
+            if fps <= 0: fps = 30.0
+            
+            out = cv2.VideoWriter(save_path, fourcc, fps, (width, height))
+            for frame in frames:
+                out.write(frame)
+            out.release()
             return True
         return False

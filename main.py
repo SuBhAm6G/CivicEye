@@ -87,6 +87,7 @@ def get_video_source():
     
     print("⚠️  No video source found. Using placeholder frames.")
     return None
+    # return "http://192.168.1.109:8080/video"
 
 
 def run_server(video_source):

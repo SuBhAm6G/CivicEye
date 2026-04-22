@@ -18,6 +18,7 @@ const CONFIG = {
 // =============================================================================
 
 let currentState = null;
+let clipInterval = null;   // setInterval handle for evidence animation
 let pollInterval = null;
 let logRefreshInterval = null;
 let currentTab = 'monitoring';
@@ -94,6 +95,7 @@ const elements = {
     recentAlertsList: document.getElementById('recent-alerts-list'),
     sentMessagesList: document.getElementById('sent-messages-list'),
     refreshLogs: document.getElementById('refresh-logs'),
+    exportPdfBtn: document.getElementById('export-pdf-btn'),
     logEntries: document.getElementById('log-entries'),
 
     // Audio
@@ -179,6 +181,21 @@ function setupEventListeners() {
             e.preventDefault();
             console.log('Refresh logs clicked');
             fetchLogs();
+        });
+    }
+
+    // Export PDF
+    if (elements.exportPdfBtn) {
+        elements.exportPdfBtn.addEventListener('click', () => {
+            const btn = elements.exportPdfBtn;
+            btn.textContent = '⏳ GENERATING...';
+            btn.disabled = true;
+            // Open in new tab — browser will handle the download
+            window.open(`${CONFIG.API_BASE}/export/pdf`, '_blank');
+            setTimeout(() => {
+                btn.textContent = '⬇ EXPORT PDF';
+                btn.disabled = false;
+            }, 2500);
         });
     }
 }
@@ -494,6 +511,42 @@ function updateStatusDisplay(data) {
     }
 }
 
+// =============================================================================
+// EVIDENCE CLIP ANIMATION
+// =============================================================================
+
+function stopClip() {
+    if (clipInterval !== null) {
+        clearInterval(clipInterval);
+        clipInterval = null;
+    }
+}
+
+function animateClip(frames) {
+    if (!frames || frames.length === 0) return;
+    stopClip();
+    let idx = 0;
+    // Cycle through frames at ~4 fps (250ms per frame × 12 frames ≈ 3 seconds per loop)
+    clipInterval = setInterval(() => {
+        if (elements.suspectPhoto) {
+            elements.suspectPhoto.src = frames[idx % frames.length];
+        }
+        idx++;
+    }, 250);
+}
+
+async function fetchEvidenceClip() {
+    try {
+        const res = await fetch(`${CONFIG.API_BASE}/evidence/frames`);
+        const data = await res.json();
+        if (data.frames && data.frames.length > 0) {
+            animateClip(data.frames);
+        }
+    } catch (e) {
+        console.warn('Could not fetch evidence clip:', e);
+    }
+}
+
 function showAlert(offenderDetails) {
     elements.alertPanel.classList.add('has-alert');
     elements.noAlerts.classList.add('hidden');
@@ -505,7 +558,13 @@ function showAlert(offenderDetails) {
 
     // Update suspect info
     if (offenderDetails) {
-        elements.suspectPhoto.src = offenderDetails.photo_url || 'https://via.placeholder.com/70?text=?';
+        // Set static thumbnail first (immediate feedback)
+        elements.suspectPhoto.src = offenderDetails.photo_url || '';
+
+        // If the backend captured a clip, fetch and animate it
+        if (offenderDetails.has_clip) {
+            fetchEvidenceClip();
+        }
         elements.suspectId.textContent = offenderDetails.id || 'UNKNOWN';
         elements.suspectName.textContent = offenderDetails.name || 'Unknown Citizen';
 
@@ -542,6 +601,7 @@ function showAlert(offenderDetails) {
 }
 
 function hideAlert() {
+    stopClip();  // Stop evidence clip animation
     elements.alertPanel.classList.remove('has-alert');
     elements.noAlerts.classList.remove('hidden');
     elements.activeAlert.classList.add('hidden');
