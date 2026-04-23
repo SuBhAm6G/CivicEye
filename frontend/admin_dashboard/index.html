@@ -393,7 +393,67 @@
     <!-- Alert Sound -->
     <audio id="alert-sound" src="../../assets/siren.mp3"></audio>
 
+    <!-- INCIDENT DETAIL MODAL -->
+    <div id="incident-modal-overlay" class="modal-overlay" onclick="closeIncidentModal(event)">
+        <div class="incident-modal" id="incident-modal">
+            <div class="modal-footage">
+                <div class="modal-footage-header">
+                    <span class="modal-cam-label">&#128249; CAM-001 &middot; SECTOR 7-G</span>
+                    <span id="modal-clip-badge" class="modal-clip-badge">EVIDENCE CLIP</span>
+                </div>
+                <div class="modal-footage-frame" id="modal-footage-frame"></div>
+                <div class="modal-footage-timeline">
+                    <span class="timeline-label">T&minus;10s</span>
+                    <div class="timeline-bar">
+                        <div id="modal-timeline-fill" class="timeline-fill"></div>
+                    </div>
+                    <span class="timeline-label">T&minus;7s</span>
+                </div>
+            </div>
+            <div class="modal-sidebar">
+                <button class="modal-close-btn" onclick="closeIncidentModal()">&#10005;</button>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">INCIDENT ID</span>
+                    <span id="modal-incident-id" class="modal-value mono">INC-XXXXXXX</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">SUSPECT</span>
+                    <span id="modal-suspect-name" class="modal-value highlight">&#8212;</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">CITIZEN ID</span>
+                    <span id="modal-citizen-id" class="modal-value mono">VIO-XXXXXXX</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">TIMESTAMP</span>
+                    <span id="modal-timestamp" class="modal-value">&#8212;</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">LOCATION</span>
+                    <span id="modal-location" class="modal-value">Sector 7-G, Main Gate</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">OFFENSE</span>
+                    <span class="modal-value" style="color:var(--accent-red)">Littering &mdash; Abandoned Object</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">FINE ISSUED</span>
+                    <span id="modal-fine" class="modal-value fine-amount">&#8377;500</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">STATUS</span>
+                    <span id="modal-status" class="modal-status-badge">CONFIRMED</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">CONFIRMED BY</span>
+                    <span id="modal-action-by" class="modal-value mono">ADMIN-001</span>
+                </div>
+                <div class="modal-footer-note">Powered by CivicEye v1.3 &middot; AMD Slingshot 2026</div>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 
-</html>
+</html>

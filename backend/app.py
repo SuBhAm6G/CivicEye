@@ -307,13 +307,16 @@ def admin_action():
         # Set to SHAMING state
         set_state("SHAMING")
         
-        # Log the incident
+        # Log the incident (include evidence frames for the modal viewer)
         incident = {
             "id": f"INC-{int(time.time())}",
             "timestamp": datetime.now().isoformat(),
             "offender": CURRENT_OFFENDER,
             "status": "CONFIRMED",
-            "action_by": data.get('admin_id', 'ADMIN-001')
+            "action_by": data.get('admin_id', 'ADMIN-001'),
+            "location": "Sector 7-G, Main Gate",
+            "fine": "₹500",
+            "evidence_frames": EVIDENCE_FRAMES  # base64 JPEG list
         }
         save_incident(incident)
         
@@ -358,11 +361,22 @@ def get_logs():
 
 @app.route('/evidence/frames')
 def get_evidence_frames():
-    """Return the captured evidence clip as base64-encoded JPEG frames."""
+    """Return the current alert's evidence clip as base64-encoded JPEG frames."""
     return jsonify({
         "frames": EVIDENCE_FRAMES,
         "count": len(EVIDENCE_FRAMES)
     })
+
+
+@app.route('/evidence/frames/<incident_id>')
+def get_incident_evidence_frames(incident_id):
+    """Return evidence frames for a specific past incident from the log."""
+    incidents = load_incident_log()
+    for inc in incidents:
+        if inc.get('id') == incident_id:
+            frames = inc.get('evidence_frames', [])
+            return jsonify({"frames": frames, "count": len(frames)})
+    return jsonify({"frames": [], "count": 0})
 
 
 @app.route('/assets/<path:filename>')

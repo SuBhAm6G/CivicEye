@@ -229,7 +229,65 @@ class LitterMonitor:
                 # Check distance to nearest person
                 distance = self._find_nearest_person_distance(centroid, person_bboxes)
                 nearest_dist = min(nearest_dist, distance)
-                
+
+                # ── Draw arrow to nearest person ────────────────────────────
+                if person_bboxes:
+                    # Find which person is nearest
+                    nearest_person_centroid = None
+                    best = float('inf')
+                    for pb in person_bboxes:
+                        pc = self._calculate_centroid(pb)
+                        d  = self._calculate_distance(centroid, pc)
+                        if d < best:
+                            best = d
+                            nearest_person_centroid = pc
+
+                    if nearest_person_centroid is not None:
+                        # Color: green (close/safe) → yellow (medium) → red (far/littering)
+                        if distance < self.DISTANCE_THRESHOLD * 0.5:
+                            arrow_color = (0, 220, 80)    # green — object still near person
+                        elif distance < self.DISTANCE_THRESHOLD:
+                            arrow_color = (0, 165, 255)   # orange — borderline
+                        else:
+                            arrow_color = (0, 0, 255)     # red — confirmed litter distance
+
+                        lx, ly = int(centroid[0]), int(centroid[1])
+                        px, py = int(nearest_person_centroid[0]), int(nearest_person_centroid[1])
+
+                        # Dashed line effect: draw short segments
+                        seg_len = 12
+                        gap_len = 6
+                        dx = px - lx
+                        dy = py - ly
+                        total = max(1, int(np.hypot(dx, dy)))
+                        step = seg_len + gap_len
+                        for s in range(0, total, step):
+                            t0 = s / total
+                            t1 = min((s + seg_len) / total, 1.0)
+                            x0, y0 = int(lx + dx * t0), int(ly + dy * t0)
+                            x1, y1 = int(lx + dx * t1), int(ly + dy * t1)
+                            cv2.line(annotated_frame, (x0, y0), (x1, y1), arrow_color, 2, cv2.LINE_AA)
+
+                        # Arrowhead at the person end
+                        cv2.arrowedLine(annotated_frame,
+                                        (int(lx + dx * 0.78), int(ly + dy * 0.78)),
+                                        (px, py),
+                                        arrow_color, 2, cv2.LINE_AA, tipLength=0.35)
+
+                        # Distance label at midpoint
+                        mid_x = (lx + px) // 2
+                        mid_y = (ly + py) // 2
+                        label = f'{int(distance)}px'
+                        (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.45, 1)
+                        cv2.rectangle(annotated_frame,
+                                      (mid_x - 3, mid_y - th - 3),
+                                      (mid_x + tw + 3, mid_y + 3),
+                                      (0, 0, 0), -1)
+                        cv2.putText(annotated_frame, label,
+                                    (mid_x, mid_y),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.45, arrow_color, 1, cv2.LINE_AA)
+                # ─────────────────────────────────────────────────────────────
+
                 if distance > self.DISTANCE_THRESHOLD:
                     litter_detected = True
                     self.detected_bottle_frame = bbox
