@@ -126,6 +126,62 @@
                     </div>
                 </div>
 
+                <!-- Camera Network Strip -->
+                <div class="panel camera-network-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">🗺️</span>
+                        <h2>CAMERA NETWORK — SECTOR 7</h2>
+                        <span class="network-badge">2 NODES CONFIGURED · 1 ONLINE</span>
+                    </div>
+                    <div class="panel-content">
+                        <div class="camera-grid">
+                            <!-- Camera 1 — ACTIVE -->
+                            <div class="camera-tile active">
+                                <div class="cam-thumb">
+                                    <img src="http://localhost:5000/video_feed" alt="CAM-001" class="cam-thumb-img">
+                                    <div class="cam-status-dot online"></div>
+                                </div>
+                                <div class="cam-info">
+                                    <span class="cam-id">CAM-001</span>
+                                    <span class="cam-location">Sector 7-G · Main Gate</span>
+                                    <span class="cam-status-text online">● ONLINE</span>
+                                </div>
+                            </div>
+                            <!-- Camera 2 — OFFLINE (narrative) -->
+                            <div class="camera-tile offline">
+                                <div class="cam-thumb">
+                                    <div class="cam-offline-placeholder">
+                                        <span class="cam-offline-icon">📷</span>
+                                        <span>NO SIGNAL</span>
+                                    </div>
+                                    <div class="cam-status-dot offline"></div>
+                                </div>
+                                <div class="cam-info">
+                                    <span class="cam-id">CAM-002</span>
+                                    <span class="cam-location">Sector 7-H · Park Entrance</span>
+                                    <span class="cam-status-text offline">● OFFLINE</span>
+                                </div>
+                            </div>
+                            <!-- Camera 3 — placeholder slot -->
+                            <div class="camera-tile slot">
+                                <div class="cam-thumb">
+                                    <div class="cam-offline-placeholder slot-placeholder">
+                                        <span class="cam-offline-icon">＋</span>
+                                        <span>ADD CAMERA</span>
+                                    </div>
+                                </div>
+                                <div class="cam-info">
+                                    <span class="cam-id" style="color: var(--text-secondary)">CAM-003</span>
+                                    <span class="cam-location">Unassigned</span>
+                                    <span class="cam-status-text" style="color: var(--text-secondary)">● NOT CONFIGURED</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
                 <!-- Alert Panel -->
                 <div class="panel alert-panel" id="alert-panel">
                     <div class="panel-header">
@@ -161,11 +217,22 @@
                                 </div>
                             </div>
                             <div class="suspect-preview">
-                                <img id="suspect-photo" src="" alt="Suspect">
+                                <img id="suspect-photo" src="" alt="Evidence Clip">
                                 <div class="suspect-info">
                                     <span class="suspect-label">MATCHED CITIZEN</span>
                                     <span id="suspect-id" class="suspect-id">CIV-XXX</span>
                                     <span id="suspect-name" class="suspect-name">Unknown</span>
+                                    <div class="confidence-row">
+                                        <span class="confidence-label">AI CONFIDENCE</span>
+                                        <span id="suspect-confidence" class="confidence-value">--%</span>
+                                    </div>
+                                    <div class="confidence-bar-track">
+                                        <div id="confidence-bar-fill" class="confidence-bar-fill"></div>
+                                    </div>
+                                    <div class="prior-offenses-row">
+                                        <span class="confidence-label">PRIOR OFFENSES</span>
+                                        <span id="suspect-priors" class="priors-badge">0</span>
+                                    </div>
                                 </div>
                             </div>
                             <div class="alert-actions">
@@ -285,6 +352,7 @@
                     <div class="panel-header">
                         <span class="panel-icon">📋</span>
                         <h2>INCIDENT LOG</h2>
+                        <button id="export-pdf-btn" class="export-btn">⬇ EXPORT PDF</button>
                         <button id="refresh-logs" class="refresh-btn">↻ REFRESH</button>
                     </div>
                     <div class="panel-content">
@@ -325,7 +393,67 @@
     <!-- Alert Sound -->
     <audio id="alert-sound" src="../../assets/siren.mp3"></audio>
 
+    <!-- INCIDENT DETAIL MODAL -->
+    <div id="incident-modal-overlay" class="modal-overlay" onclick="closeIncidentModal(event)">
+        <div class="incident-modal" id="incident-modal">
+            <div class="modal-footage">
+                <div class="modal-footage-header">
+                    <span class="modal-cam-label">&#128249; CAM-001 &middot; SECTOR 7-G</span>
+                    <span id="modal-clip-badge" class="modal-clip-badge">EVIDENCE CLIP</span>
+                </div>
+                <div class="modal-footage-frame" id="modal-footage-frame"></div>
+                <div class="modal-footage-timeline">
+                    <span class="timeline-label">T&minus;10s</span>
+                    <div class="timeline-bar">
+                        <div id="modal-timeline-fill" class="timeline-fill"></div>
+                    </div>
+                    <span class="timeline-label">T&minus;7s</span>
+                </div>
+            </div>
+            <div class="modal-sidebar">
+                <button class="modal-close-btn" onclick="closeIncidentModal()">&#10005;</button>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">INCIDENT ID</span>
+                    <span id="modal-incident-id" class="modal-value mono">INC-XXXXXXX</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">SUSPECT</span>
+                    <span id="modal-suspect-name" class="modal-value highlight">&#8212;</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">CITIZEN ID</span>
+                    <span id="modal-citizen-id" class="modal-value mono">VIO-XXXXXXX</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">TIMESTAMP</span>
+                    <span id="modal-timestamp" class="modal-value">&#8212;</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">LOCATION</span>
+                    <span id="modal-location" class="modal-value">Sector 7-G, Main Gate</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">OFFENSE</span>
+                    <span class="modal-value" style="color:var(--accent-red)">Littering &mdash; Abandoned Object</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">FINE ISSUED</span>
+                    <span id="modal-fine" class="modal-value fine-amount">&#8377;500</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">STATUS</span>
+                    <span id="modal-status" class="modal-status-badge">CONFIRMED</span>
+                </div>
+                <div class="modal-sidebar-section">
+                    <span class="modal-section-label">CONFIRMED BY</span>
+                    <span id="modal-action-by" class="modal-value mono">ADMIN-001</span>
+                </div>
+                <div class="modal-footer-note">Powered by CivicEye v1.3 &middot; AMD Slingshot 2026</div>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 
-</html>
+</html>

@@ -56,6 +56,45 @@ Unlike traditional CCTV that requires constant human monitoring, **CivicEye** is
 
 ---
 
+## 📌 Implemented Features vs Future Scope
+
+This prototype reflects the core **CivicEye** workflow presented in the AMD Slingshot concept deck: detect littering in real time, give the citizen a short correction window, escalate the event through a public-facing display, and let a human operator verify the violation before enforcement.
+
+### ✅ Currently Implemented in This Prototype
+
+-   **Real-time AI surveillance pipeline** using **YOLOv8 + OpenCV** to process a live camera feed or demo footage.
+-   **Litter-and-person detection logic** that tracks common litter-like objects and nearby people in the same scene.
+-   **Intent/grace-period workflow** with a staged response model: **IDLE -> WARNING -> SHAMING**.
+-   **Human-in-the-loop verification** through the admin dashboard, where an operator can **Confirm Violation** or mark it as a **False Alarm**.
+-   **Public display control panel** with live preview for warning and enforcement states.
+-   **Custom warning, shaming, and fine text** editable from the dashboard.
+-   **Evidence capture and incident logging** with stored snapshots/clip frames and timestamped JSON records.
+-   **Security alert history** showing recent incidents and confirmed cases.
+-   **PDF report export** for incident summaries.
+-   **Privacy-aware surveillance pause** that temporarily stops AI detection without shutting down the video feed.
+-   **Demo/testing controls** to manually trigger and reset alerts during presentations.
+
+### 🚀 Future Scope / Planned Expansion
+
+-   **Custom-trained localized litter model** for Indian street waste categories such as chai cups, gutka wrappers, and other city-specific objects.
+-   **Multilingual public intervention**, including localized on-screen prompts and voice alerts for different regions.
+-   **Live SMS/WhatsApp dispatch integration** for real security personnel instead of dashboard-only message visualization.
+-   **Automated e-challan / fine issuance** backed by logged evidence and municipal workflows.
+-   **Escalating penalties based on repeat offenses**, where fine amounts increase dynamically using the citizen's prior offense history.
+-   **Cloud-connected incident management** for centralized monitoring across zones, wards, or smart-city command centers.
+-   **Heatmap overlays of litter hotspots**, generated from incident timestamps and location metadata to help city teams identify recurring problem zones.
+-   **Audit-ready pause/resume logging**, so every surveillance stop and restart is recorded with timestamps for accountability and chain-of-custody.
+-   **Person re-identification across the grace period**, linking the last known position of the suspected offender to the abandoned litter for stronger visual traceability.
+-   **Forensic-style evidence watermarking**, embedding timestamps, camera ID, and GPS/location metadata directly onto captured evidence frames.
+-   **Multi-camera deployment at scale** across stations, parks, streets, and public transport hubs.
+-   **AMD-optimized acceleration roadmap**, including stronger multi-stream edge inference and future **ROCm/Radeon GPU** support.
+
+### 💡 Prototype Positioning
+
+This repository is best understood as a **working edge-AI prototype**: it already demonstrates the detection loop, operator review, public warning experience, evidence logging, and enforcement-style UI. The larger smart-city rollout vision from the pitch deck extends this foundation toward multilingual alerts, municipal integrations, and city-scale deployment.
+
+---
+
 ## 🖥️ Dashboard Tour
 
 ### 1. Live Monitoring Tab 🎥

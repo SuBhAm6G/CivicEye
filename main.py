@@ -87,6 +87,7 @@ def get_video_source():
     
     print("⚠️  No video source found. Using placeholder frames.")
     return None
+    # return "http://192.168.1.109:8080/video"
 
 
 def run_server(video_source):
@@ -94,7 +95,7 @@ def run_server(video_source):
     from backend.app import app, init_detector, set_video_source
     
     # Initialize detector
-    print("🔧 Loading YOLOv8 model...")
+    print("🔧 Loading YOLOv8s model...")
     try:
         init_detector()
         print("✅ AI detector initialized")

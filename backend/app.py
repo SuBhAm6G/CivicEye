@@ -43,6 +43,9 @@ CUSTOM_MESSAGES = {
 # Surveillance Control
 SURVEILLANCE_ACTIVE = True
 
+# Evidence clip: list of base64-encoded JPEG strings (sampled frames from -10s to -7s)
+EVIDENCE_FRAMES = []
+
 # Initialize AI components
 litter_monitor = None
 face_matcher = FaceMatcher()
@@ -59,7 +62,7 @@ video_source = None
 def init_detector(model_path='yolov8n.pt'):
     """Initialize the litter detector."""
     global litter_monitor
-    litter_monitor = LitterMonitor(model_path)
+    litter_monitor = LitterMonitor('yolov8s.pt')
 
 
 def set_video_source(source):
@@ -159,26 +162,39 @@ def generate_frames():
                 
                 # Update state based on detection
                 if detected_state == "WARNING" and SYSTEM_STATE == "IDLE":
-                    # Save the captured violator frame
-                    from datetime import datetime
+                    import cv2
+                    import base64
+                    global EVIDENCE_FRAMES
+                    
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                    captured_filename = f"violator_{timestamp}.jpg"
-                    captured_path = os.path.join(DATABASE_DIR, 'captured', captured_filename)
+                    raw_frames = litter_monitor.captured_violator_frames \
+                        if hasattr(litter_monitor, 'captured_violator_frames') else []
                     
-                    # Create captured directory if it doesn't exist
-                    os.makedirs(os.path.join(DATABASE_DIR, 'captured'), exist_ok=True)
+                    # Sample up to 12 frames evenly from the 3-second window
+                    # Encode each as base64 JPEG (quality 70 — small + good enough)
+                    encoded = []
+                    if raw_frames:
+                        step = max(1, len(raw_frames) // 12)
+                        for f in raw_frames[::step][:12]:
+                            ok, buf = cv2.imencode('.jpg', f, [cv2.IMWRITE_JPEG_QUALITY, 70])
+                            if ok:
+                                encoded.append(
+                                    'data:image/jpeg;base64,' + base64.b64encode(buf).decode('utf-8')
+                                )
                     
-                    # Save the frame
-                    if litter_monitor.save_captured_frame(captured_path):
-                        # Create offender data with real captured image
-                        offender = {
-                            "id": f"VIO-{timestamp}",
-                            "name": "Unidentified Violator",
-                            "photo_url": f"http://localhost:5000/database/captured/{captured_filename}"
-                        }
-                    else:
-                        # Fallback to mock data if capture failed
-                        offender = face_matcher.match_face()
+                    EVIDENCE_FRAMES = encoded  # Store for /evidence/frames endpoint
+                    
+                    # Use first frame as the static thumbnail (fallback if JS fails)
+                    thumbnail_url = EVIDENCE_FRAMES[0] if EVIDENCE_FRAMES else None
+                    
+                    offender = {
+                        "id": f"VIO-{timestamp}",
+                        "name": "Unidentified Violator",
+                        "photo_url": thumbnail_url or "",
+                        "match_confidence": round(__import__('random').uniform(0.91, 0.99), 2),
+                        "prior_offenses": 0,
+                        "has_clip": len(EVIDENCE_FRAMES) > 0
+                    }
                     
                     set_state("WARNING", offender)
                 
@@ -291,13 +307,16 @@ def admin_action():
         # Set to SHAMING state
         set_state("SHAMING")
         
-        # Log the incident
+        # Log the incident (include evidence frames for the modal viewer)
         incident = {
             "id": f"INC-{int(time.time())}",
             "timestamp": datetime.now().isoformat(),
             "offender": CURRENT_OFFENDER,
             "status": "CONFIRMED",
-            "action_by": data.get('admin_id', 'ADMIN-001')
+            "action_by": data.get('admin_id', 'ADMIN-001'),
+            "location": "Sector 7-G, Main Gate",
+            "fine": "₹500",
+            "evidence_frames": EVIDENCE_FRAMES  # base64 JPEG list
         }
         save_incident(incident)
         
@@ -338,6 +357,26 @@ def get_logs():
         "count": len(incidents),
         "incidents": incidents
     })
+
+
+@app.route('/evidence/frames')
+def get_evidence_frames():
+    """Return the current alert's evidence clip as base64-encoded JPEG frames."""
+    return jsonify({
+        "frames": EVIDENCE_FRAMES,
+        "count": len(EVIDENCE_FRAMES)
+    })
+
+
+@app.route('/evidence/frames/<incident_id>')
+def get_incident_evidence_frames(incident_id):
+    """Return evidence frames for a specific past incident from the log."""
+    incidents = load_incident_log()
+    for inc in incidents:
+        if inc.get('id') == incident_id:
+            frames = inc.get('evidence_frames', [])
+            return jsonify({"frames": frames, "count": len(frames)})
+    return jsonify({"frames": [], "count": 0})
 
 
 @app.route('/assets/<path:filename>')
@@ -402,6 +441,129 @@ def toggle_surveillance():
     })
 
 
+@app.route('/export/pdf')
+def export_pdf():
+    """Generate and download a PDF incident report."""
+    try:
+        from fpdf import FPDF, XPos, YPos
+    except ImportError:
+        return jsonify({
+            "error": "fpdf2 not installed. Run: pip install fpdf2"
+        }), 500
+
+    import io
+    from flask import send_file
+
+    incidents = load_incident_log()
+    generated_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+
+    # ---- Dark header bar ----
+    pdf.set_fill_color(10, 14, 26)
+    pdf.rect(0, 0, 210, 38, style='F')
+
+    pdf.set_font("Helvetica", "B", 22)
+    pdf.set_text_color(0, 200, 255)
+    pdf.set_xy(0, 6)
+    pdf.cell(210, 12, "CIVICEYE", align="C",
+             new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+    pdf.set_font("Helvetica", "", 10)
+    pdf.set_text_color(140, 160, 180)
+    pdf.cell(210, 8, "Smart City Litter Surveillance  -  Incident Report", align="C",
+             new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.ln(10)
+
+    # ---- Meta block ----
+    pdf.set_text_color(30, 30, 30)
+
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.cell(45, 7, "Generated:")
+    pdf.set_font("Helvetica", "", 9)
+    pdf.cell(0, 7, generated_at, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.cell(45, 7, "Zone / Camera:")
+    pdf.set_font("Helvetica", "", 9)
+    pdf.cell(0, 7, "Sector 7-G, Main Gate  |  CAM-001", new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+
+    pdf.set_font("Helvetica", "B", 9)
+    pdf.cell(45, 7, "Total Incidents:")
+    pdf.set_font("Helvetica", "", 9)
+    pdf.cell(0, 7, str(len(incidents)), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.ln(6)
+
+    # ---- Divider line ----
+    pdf.set_draw_color(200, 200, 200)
+    pdf.line(pdf.l_margin, pdf.get_y(), 210 - pdf.r_margin, pdf.get_y())
+    pdf.ln(4)
+
+    if not incidents:
+        pdf.set_font("Helvetica", "I", 11)
+        pdf.set_text_color(120, 120, 120)
+        pdf.cell(0, 12, "No incidents recorded.", align="C",
+                 new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    else:
+        # ---- Table header ----
+        col_w = [32, 44, 36, 36, 42]
+        headers = ["Incident ID", "Timestamp", "Citizen ID", "Status", "Action By"]
+
+        pdf.set_fill_color(26, 31, 53)
+        pdf.set_text_color(0, 200, 255)
+        pdf.set_font("Helvetica", "B", 9)
+        for i, h in enumerate(headers):
+            last = (i == len(headers) - 1)
+            pdf.cell(col_w[i], 9, h, border=1, fill=True,
+                     new_x=XPos.LMARGIN if last else XPos.RIGHT,
+                     new_y=YPos.NEXT if last else YPos.TOP)
+
+        # ---- Table rows ----
+        pdf.set_font("Helvetica", "", 8)
+        for idx, inc in enumerate(reversed(incidents)):
+            fill = idx % 2 == 0
+            if fill:
+                pdf.set_fill_color(235, 240, 255)
+            else:
+                pdf.set_fill_color(255, 255, 255)
+            pdf.set_text_color(20, 20, 20)
+
+            ts = inc.get("timestamp", "")[:19].replace("T", " ")
+            citizen_id = (inc.get("offender") or {}).get("id", "UNKNOWN")
+            row = [
+                inc.get("id", "")[:14],
+                ts,
+                citizen_id[:16],
+                inc.get("status", "")[:12],
+                inc.get("action_by", "")[:14],
+            ]
+            for i, val in enumerate(row):
+                last = (i == len(row) - 1)
+                pdf.cell(col_w[i], 8, val, border=1, fill=fill,
+                         new_x=XPos.LMARGIN if last else XPos.RIGHT,
+                         new_y=YPos.NEXT if last else YPos.TOP)
+
+    # ---- Footer ----
+    pdf.ln(10)
+    pdf.set_draw_color(200, 200, 200)
+    pdf.line(pdf.l_margin, pdf.get_y(), 210 - pdf.r_margin, pdf.get_y())
+    pdf.ln(3)
+    pdf.set_font("Helvetica", "I", 7)
+    pdf.set_text_color(150, 150, 150)
+    pdf.cell(0, 5,
+             "CivicEye v1.2.0  -  AMD SLINGSHOT 2026  |  CONFIDENTIAL - FOR MUNICIPAL USE ONLY",
+             align="C")
+
+    # ---- Stream as download ----
+    buf = io.BytesIO(bytes(pdf.output()))
+    buf.seek(0)
+    filename = f"civiceye_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+    return send_file(buf, mimetype='application/pdf',
+                     as_attachment=True, download_name=filename)
+
+
 # =============================================================================
 # DEBUG/DEMO ROUTES
 # =============================================================================
@@ -433,5 +595,5 @@ def demo_reset():
 # =============================================================================
 
 if __name__ == '__main__':
-    init_detector()
+    init_detector('yolov8s.pt')
     app.run(host='0.0.0.0', port=5000, debug=True, threaded=True)

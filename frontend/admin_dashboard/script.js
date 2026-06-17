@@ -18,6 +18,7 @@ const CONFIG = {
 // =============================================================================
 
 let currentState = null;
+let clipInterval = null;   // setInterval handle for evidence animation
 let pollInterval = null;
 let logRefreshInterval = null;
 let currentTab = 'monitoring';
@@ -63,6 +64,9 @@ const elements = {
     suspectPhoto: document.getElementById('suspect-photo'),
     suspectId: document.getElementById('suspect-id'),
     suspectName: document.getElementById('suspect-name'),
+    suspectConfidence: document.getElementById('suspect-confidence'),
+    confidenceBarFill: document.getElementById('confidence-bar-fill'),
+    suspectPriors: document.getElementById('suspect-priors'),
 
     // Buttons
     confirmBtn: document.getElementById('confirm-btn'),
@@ -91,6 +95,7 @@ const elements = {
     recentAlertsList: document.getElementById('recent-alerts-list'),
     sentMessagesList: document.getElementById('sent-messages-list'),
     refreshLogs: document.getElementById('refresh-logs'),
+    exportPdfBtn: document.getElementById('export-pdf-btn'),
     logEntries: document.getElementById('log-entries'),
 
     // Audio
@@ -176,6 +181,21 @@ function setupEventListeners() {
             e.preventDefault();
             console.log('Refresh logs clicked');
             fetchLogs();
+        });
+    }
+
+    // Export PDF
+    if (elements.exportPdfBtn) {
+        elements.exportPdfBtn.addEventListener('click', () => {
+            const btn = elements.exportPdfBtn;
+            btn.textContent = '⏳ GENERATING...';
+            btn.disabled = true;
+            // Open in new tab — browser will handle the download
+            window.open(`${CONFIG.API_BASE}/export/pdf`, '_blank');
+            setTimeout(() => {
+                btn.textContent = '⬇ EXPORT PDF';
+                btn.disabled = false;
+            }, 2500);
         });
     }
 }
@@ -491,6 +511,42 @@ function updateStatusDisplay(data) {
     }
 }
 
+// =============================================================================
+// EVIDENCE CLIP ANIMATION
+// =============================================================================
+
+function stopClip() {
+    if (clipInterval !== null) {
+        clearInterval(clipInterval);
+        clipInterval = null;
+    }
+}
+
+function animateClip(frames) {
+    if (!frames || frames.length === 0) return;
+    stopClip();
+    let idx = 0;
+    // Cycle through frames at ~4 fps (250ms per frame × 12 frames ≈ 3 seconds per loop)
+    clipInterval = setInterval(() => {
+        if (elements.suspectPhoto) {
+            elements.suspectPhoto.src = frames[idx % frames.length];
+        }
+        idx++;
+    }, 250);
+}
+
+async function fetchEvidenceClip() {
+    try {
+        const res = await fetch(`${CONFIG.API_BASE}/evidence/frames`);
+        const data = await res.json();
+        if (data.frames && data.frames.length > 0) {
+            animateClip(data.frames);
+        }
+    } catch (e) {
+        console.warn('Could not fetch evidence clip:', e);
+    }
+}
+
 function showAlert(offenderDetails) {
     elements.alertPanel.classList.add('has-alert');
     elements.noAlerts.classList.add('hidden');
@@ -502,9 +558,39 @@ function showAlert(offenderDetails) {
 
     // Update suspect info
     if (offenderDetails) {
-        elements.suspectPhoto.src = offenderDetails.photo_url || 'https://via.placeholder.com/70?text=?';
+        // Set static thumbnail first (immediate feedback)
+        elements.suspectPhoto.src = offenderDetails.photo_url || '';
+
+        // If the backend captured a clip, fetch and animate it
+        if (offenderDetails.has_clip) {
+            fetchEvidenceClip();
+        }
         elements.suspectId.textContent = offenderDetails.id || 'UNKNOWN';
         elements.suspectName.textContent = offenderDetails.name || 'Unknown Citizen';
+
+        // Confidence score
+        const conf = offenderDetails.match_confidence;
+        if (conf !== undefined && conf !== null) {
+            const pct = Math.round(conf * 100);
+            elements.suspectConfidence.textContent = `${pct}%`;
+            // Color: green >=90, yellow >=75, red below
+            const color = pct >= 90 ? '#00ff88' : pct >= 75 ? '#ffaa00' : '#ff3366';
+            elements.suspectConfidence.style.color = color;
+            // Animate the bar fill
+            elements.confidenceBarFill.style.width = '0%';
+            elements.confidenceBarFill.style.background = color;
+            setTimeout(() => {
+                elements.confidenceBarFill.style.width = `${pct}%`;
+            }, 50);
+        } else {
+            elements.suspectConfidence.textContent = 'N/A';
+            elements.confidenceBarFill.style.width = '0%';
+        }
+
+        // Prior offenses badge
+        const priors = offenderDetails.prior_offenses ?? 0;
+        elements.suspectPriors.textContent = priors;
+        elements.suspectPriors.className = `priors-badge ${priors >= 3 ? 'high' : priors >= 1 ? 'medium' : 'none'}`;
     }
 
     // Update pending count
@@ -515,6 +601,7 @@ function showAlert(offenderDetails) {
 }
 
 function hideAlert() {
+    stopClip();  // Stop evidence clip animation
     elements.alertPanel.classList.remove('has-alert');
     elements.noAlerts.classList.remove('hidden');
     elements.activeAlert.classList.add('hidden');
@@ -698,14 +785,145 @@ function updateSentMessages(incidents) {
 }
 
 function updateLogDisplay(incidents) {
+    renderLogEntries(incidents);
+}
+
+// =============================================================================
+// INCIDENT DETAIL MODAL
+// =============================================================================
+
+const INDIAN_NAMES = [
+    'Arjun Sharma', 'Priya Verma', 'Rohit Patel', 'Anjali Singh', 'Vikram Nair',
+    'Deepika Reddy', 'Amit Joshi', 'Kavita Mehta', 'Suresh Iyer', 'Pooja Gupta',
+    'Rajesh Kumar', 'Sneha Pillai', 'Aakash Tiwari', 'Meena Bhat', 'Nikhil Rao',
+    'Divya Menon', 'Kiran Das', 'Rekha Chaudhary', 'Manish Mishra', 'Ananya Ghosh'
+];
+
+let modalClipInterval = null;
+let modalTimelineInterval = null;
+
+function getIndianName(seed) {
+    // Deterministic: same incident always shows the same name
+    const idx = Math.abs(seed.split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % INDIAN_NAMES.length;
+    return INDIAN_NAMES[idx];
+}
+
+function stopModalClip() {
+    if (modalClipInterval) { clearInterval(modalClipInterval); modalClipInterval = null; }
+    if (modalTimelineInterval) { clearInterval(modalTimelineInterval); modalTimelineInterval = null; }
+}
+
+function animateModalClip(frames) {
+    const frame = document.getElementById('modal-footage-frame');
+    const fill  = document.getElementById('modal-timeline-fill');
+    if (!frames || frames.length === 0 || !frame) return;
+
+    let idx = 0;
+    const total = frames.length;
+
+    // Pre-create img tag once
+    frame.innerHTML = '<img id="modal-clip-img" src="" style="width:100%;height:100%;object-fit:cover;border-radius:8px;">';
+    const img = document.getElementById('modal-clip-img');
+
+    modalClipInterval = setInterval(() => {
+        img.src = frames[idx % total];
+        if (fill) fill.style.width = `${((idx % total) / (total - 1)) * 100}%`;
+        idx++;
+    }, 250);  // 4 fps  — 3 sec loop for 12 frames
+}
+
+async function openIncidentModal(incident) {
+    const overlay = document.getElementById('incident-modal-overlay');
+    const modal   = document.getElementById('incident-modal');
+    const frame   = document.getElementById('modal-footage-frame');
+    const badge   = document.getElementById('modal-clip-badge');
+    const fill    = document.getElementById('modal-timeline-fill');
+
+    if (!overlay) return;
+    stopModalClip();
+
+    // Populate sidebar
+    const ts = new Date(incident.timestamp);
+    document.getElementById('modal-incident-id').textContent  = incident.id || '—';
+    document.getElementById('modal-citizen-id').textContent   = incident.offender?.id || 'UNKNOWN';
+    document.getElementById('modal-suspect-name').textContent = getIndianName(incident.id || 'x');
+    document.getElementById('modal-timestamp').textContent    = ts.toLocaleString('en-IN');
+    document.getElementById('modal-location').textContent     = incident.location || 'Sector 7-G, Main Gate';
+    document.getElementById('modal-fine').textContent         = incident.fine || '₹500';
+    document.getElementById('modal-status').textContent       = incident.status || 'CONFIRMED';
+    document.getElementById('modal-action-by').textContent    = incident.action_by || 'ADMIN-001';
+
+    // Show the overlay with animation
+    overlay.classList.add('active');
+    requestAnimationFrame(() => modal.classList.add('open'));
+
+    // Try to load footage from the incident record
+    frame.innerHTML = '<div class="modal-loading">⏳ Loading footage...</div>';
+    if (fill) fill.style.width = '0%';
+
+    try {
+        const res   = await fetch(`${CONFIG.API_BASE}/evidence/frames/${incident.id}`);
+        const data  = await res.json();
+
+        if (data.frames && data.frames.length > 0) {
+            badge.textContent = 'EVIDENCE CLIP';
+            badge.style.color = '#00ff88';
+            animateModalClip(data.frames);
+        } else {
+            // Old log — no footage stored
+            badge.textContent = 'BETA VERSION LOG';
+            badge.style.color = '#ffaa00';
+            frame.innerHTML = `
+                <div class="modal-no-footage">
+                    <span class="no-footage-icon">🎞️</span>
+                    <span class="no-footage-title">Beta Version Log</span>
+                    <span class="no-footage-sub">No footage available for this incident.<br>Evidence capture was introduced in v1.3.</span>
+                </div>`;
+            if (fill) fill.style.width = '0%';
+        }
+    } catch (e) {
+        frame.innerHTML = '<div class="modal-no-footage"><span>⚠️ Could not load footage</span></div>';
+    }
+}
+
+function closeIncidentModal(event) {
+    // If called by overlay click — only close when clicking the backdrop itself
+    if (event && event.currentTarget === event.target) {
+        _doCloseModal();
+    } else if (!event) {
+        // Called directly (X button)
+        _doCloseModal();
+    }
+}
+
+// Expose for onclick="" in HTML
+window.closeIncidentModal = closeIncidentModal;
+
+// Escape key
+document.addEventListener('keydown', e => { if (e.key === 'Escape') _doCloseModal(); });
+
+
+function _doCloseModal() {
+    stopModalClip();
+    const overlay = document.getElementById('incident-modal-overlay');
+    const modal   = document.getElementById('incident-modal');
+    if (!overlay) return;
+    modal.classList.remove('open');
+    setTimeout(() => overlay.classList.remove('active'), 320);
+}
+
+// =============================================================================
+// LOG ENTRIES (CLICKABLE)
+// =============================================================================
+
+function renderLogEntries(incidents) {
     if (!incidents || incidents.length === 0) {
         elements.logEntries.innerHTML = '<div class="log-empty">No incidents recorded</div>';
         return;
     }
 
-    // Sort by timestamp (newest first)
-    const sortedIncidents = [...incidents].sort((a, b) =>
-        new Date(b.timestamp) - new Date(a.timestamp)
+    const sortedIncidents = [...incidents].sort(
+        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
     );
 
     let html = '';
@@ -713,13 +931,17 @@ function updateLogDisplay(incidents) {
         const time = new Date(incident.timestamp).toLocaleTimeString();
         const citizenId = incident.offender?.id || 'UNKNOWN';
         const status = incident.status || 'CONFIRMED';
+        const hasFootage = Array.isArray(incident.evidence_frames) && incident.evidence_frames.length > 0;
 
         html += `
-            <div class="log-entry">
+            <div class="log-entry log-entry-clickable" onclick='openIncidentModal(${JSON.stringify(incident).replace(/'/g, "&#39;")})'>
                 <span>${time}</span>
                 <span>${citizenId}</span>
                 <span class="status">${status}</span>
-                <span>${incident.action_by}</span>
+                <span>${incident.action_by || '—'}</span>
+                <span class="log-footage-badge ${hasFootage ? 'has-footage' : 'no-footage'}">
+                    ${hasFootage ? '🎞️' : '📂'}
+                </span>
             </div>
         `;
     }
